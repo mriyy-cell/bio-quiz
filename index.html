@@ -310,6 +310,7 @@
 </div>
 
 <!-- Firebase SDK -->
+<!-- Firebase SDK & クイズ処理 -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -338,7 +339,7 @@
     const selectUnit = document.getElementById("select-unit");
     const selectCount = document.getElementById("select-count");
 
-    let rawUnitsData = {};
+    let rawUnitsData = [];
     let currentActiveQuestions = [];
     let currentQuestionIndex = 0;
     let score = 0;
@@ -373,39 +374,39 @@
 
     logoutBtn.addEventListener("click", () => signOut(auth));
 
-async function loadQuestions() {
+    // 単元タイトルの読み込み
+    async function loadQuestions() {
         try {
             const response = await fetch('./questions.json');
-            rawUnitsData = await response.json(); // rawUnitsData は配列になります
+            rawUnitsData = await response.json();
             
-            // 単元ドロップダウンのクリア
             selectUnit.innerHTML = "";
 
-            // 1. 全範囲の選択肢を追加
+            // 全範囲の選択肢
             const allOpt = document.createElement("option");
             allOpt.value = "all";
             allOpt.innerText = "✨ すべての単元（全範囲）";
             selectUnit.appendChild(allOpt);
 
-            // 2. 配列内の各単元オブジェクトから title を抽出して追加
-            rawUnitsData.forEach((unitObj, index) => {
-                if (unitObj && typeof unitObj === 'object') {
+            // 単元ごとの選択肢を追加
+            if (Array.isArray(rawUnitsData)) {
+                rawUnitsData.forEach((unitObj, index) => {
                     const opt = document.createElement("option");
-                    // インデックス（0, 1, 2...）をvalueにします
                     opt.value = index;
-                    // title が存在すれば表示、無ければ「単元 1」等にする
                     opt.innerText = unitObj.title ? unitObj.title : `単元 ${index + 1}`;
                     selectUnit.appendChild(opt);
-                }
-            });
+                });
+            }
         } catch (error) {
             console.error("問題データ読込エラー:", error);
         }
     }
+
+    // スタートボタンクリック時
     document.getElementById("start-btn").addEventListener("click", () => {
         prepareQuizPool();
         if (currentActiveQuestions.length === 0) {
-            alert("選択された単元に問題が用意されていません。");
+            alert("問題が見つかりませんでした。");
             return;
         }
 
@@ -420,32 +421,32 @@ async function loadQuestions() {
         showQuestion();
     });
 
-function prepareQuizPool() {
+    // 出題プール（問題一覧）の準備
+    function prepareQuizPool() {
         const chosenUnitKey = selectUnit.value;
         const chosenCountVal = selectCount.value;
 
         let pool = [];
 
         if (chosenUnitKey === "all") {
-            // 全単元から問題を集める
-            rawUnitsData.forEach(unit => {
-                if (unit && Array.isArray(unit.questions)) {
-                    pool = pool.concat(unit.questions);
-                }
-            });
+            if (Array.isArray(rawUnitsData)) {
+                rawUnitsData.forEach(unit => {
+                    if (unit && unit.questions) {
+                        pool = pool.concat(unit.questions);
+                    }
+                });
+            }
         } else {
-            // 選択されたインデックスの単元から問題を取り出す
             const unitIndex = parseInt(chosenUnitKey, 10);
-            const selectedUnit = rawUnitsData[unitIndex];
-            if (selectedUnit && Array.isArray(selectedUnit.questions)) {
-                pool = [...selectedUnit.questions];
+            if (rawUnitsData[unitIndex] && rawUnitsData[unitIndex].questions) {
+                pool = [...rawUnitsData[unitIndex].questions];
             }
         }
 
-        // 抽出された問題をランダムシャッフル
+        // シャッフル
         pool.sort(() => Math.random() - 0.5);
 
-        // 指定件数で切り出し (10問 / 15問 / 20問 / 全問)
+        // 件数制限
         if (chosenCountVal !== "all") {
             const limit = parseInt(chosenCountVal, 10);
             pool = pool.slice(0, limit);
@@ -453,12 +454,19 @@ function prepareQuizPool() {
 
         currentActiveQuestions = pool;
     }
+
+    // 1問を表示する
     function showQuestion() {
         isAnswered = false;
         const q = currentActiveQuestions[currentQuestionIndex];
+
+        if (!q) return;
+
+        // 問題番号と問題文の設定
         document.getElementById("question-number").innerText = `QUESTION ${String(currentQuestionIndex + 1).padStart(2, '0')} / ${currentActiveQuestions.length}`;
         document.getElementById("question-text").innerText = q.question;
         
+        // 連続正解カウンター
         if (streak >= 2) {
             streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
             streakCounter.style.display = "inline-block";
@@ -466,22 +474,28 @@ function prepareQuizPool() {
             streakCounter.style.display = "none";
         }
 
+        // 選択肢エリアの初期化
         const optionsContainer = document.getElementById("options-container");
         optionsContainer.innerHTML = "";
         document.getElementById("result-area").style.display = "none";
         document.getElementById("next-btn").style.display = "none";
 
-        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+        // 選択肢（options）の表示
+        if (q.options && Array.isArray(q.options)) {
+            // 選択肢をシャッフル
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
 
-        shuffledOptions.forEach((option, index) => {
-            const btn = document.createElement("button");
-            btn.className = "option-btn";
-            btn.innerHTML = `<span class="key-badge">${index + 1}</span> <span>${option}</span>`;
-            btn.onclick = () => checkAnswer(option, q.answer, q.explanation);
-            optionsContainer.appendChild(btn);
-        });
+            shuffledOptions.forEach((optionText, index) => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerHTML = `<span class="key-badge">${index + 1}</span> <span>${optionText}</span>`;
+                btn.onclick = () => checkAnswer(optionText, q.answer, q.explanation);
+                optionsContainer.appendChild(btn);
+            });
+        }
     }
 
+    // 解答判定
     function checkAnswer(selected, correct, explanation) {
         if (isAnswered) return;
         isAnswered = true;
@@ -511,7 +525,7 @@ function prepareQuizPool() {
             streakCounter.style.display = "none";
         }
 
-        resultExplanation.innerText = explanation;
+        resultExplanation.innerText = explanation || "";
         resultArea.style.display = "block";
 
         const nextBtn = document.getElementById("next-btn");
@@ -538,6 +552,7 @@ function prepareQuizPool() {
         resultScreen.style.display = "block";
     }
 
+    // キーボード操作対応 (1~4キーで回答, Enterで次へ)
     document.addEventListener("keydown", (e) => {
         if (quizScreen.style.display === "block") {
             if (!isAnswered && ["1", "2", "3", "4"].includes(e.key)) {
@@ -561,6 +576,7 @@ function prepareQuizPool() {
         }
     });
 
+    // スコア送信 (Googleフォーム)
     window.sendScore = function() {
         if (isSubmitted) return;
 
@@ -608,6 +624,5 @@ function prepareQuizPool() {
         });
     };
 </script>
-
 </body>
 </html>
