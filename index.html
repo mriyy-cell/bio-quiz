@@ -373,10 +373,10 @@
 
     logoutBtn.addEventListener("click", () => signOut(auth));
 
-    async function loadQuestions() {
+async function loadQuestions() {
         try {
             const response = await fetch('./questions.json');
-            rawUnitsData = await response.json();
+            rawUnitsData = await response.json(); // rawUnitsData は配列になります
             
             // 単元ドロップダウンのクリア
             selectUnit.innerHTML = "";
@@ -387,22 +387,21 @@
             allOpt.innerText = "✨ すべての単元（全範囲）";
             selectUnit.appendChild(allOpt);
 
-            // 2. JSON内の各単元オブジェクトから title を確実に抽出して追加
-            for (const key in rawUnitsData) {
-                const unitObj = rawUnitsData[key];
+            // 2. 配列内の各単元オブジェクトから title を抽出して追加
+            rawUnitsData.forEach((unitObj, index) => {
                 if (unitObj && typeof unitObj === 'object') {
                     const opt = document.createElement("option");
-                    opt.value = key;
-                    // titleが存在する場合はそのテキストを表示
-                    opt.innerText = unitObj.title ? unitObj.title : `単元 ${key}`;
+                    // インデックス（0, 1, 2...）をvalueにします
+                    opt.value = index;
+                    // title が存在すれば表示、無ければ「単元 1」等にする
+                    opt.innerText = unitObj.title ? unitObj.title : `単元 ${index + 1}`;
                     selectUnit.appendChild(opt);
                 }
-            }
+            });
         } catch (error) {
             console.error("問題データ読込エラー:", error);
         }
     }
-
     document.getElementById("start-btn").addEventListener("click", () => {
         prepareQuizPool();
         if (currentActiveQuestions.length === 0) {
@@ -421,21 +420,23 @@
         showQuestion();
     });
 
-    function prepareQuizPool() {
+function prepareQuizPool() {
         const chosenUnitKey = selectUnit.value;
         const chosenCountVal = selectCount.value;
 
         let pool = [];
 
         if (chosenUnitKey === "all") {
-            for (const key in rawUnitsData) {
-                const unit = rawUnitsData[key];
+            // 全単元から問題を集める
+            rawUnitsData.forEach(unit => {
                 if (unit && Array.isArray(unit.questions)) {
                     pool = pool.concat(unit.questions);
                 }
-            }
+            });
         } else {
-            const selectedUnit = rawUnitsData[chosenUnitKey];
+            // 選択されたインデックスの単元から問題を取り出す
+            const unitIndex = parseInt(chosenUnitKey, 10);
+            const selectedUnit = rawUnitsData[unitIndex];
             if (selectedUnit && Array.isArray(selectedUnit.questions)) {
                 pool = [...selectedUnit.questions];
             }
@@ -452,7 +453,6 @@
 
         currentActiveQuestions = pool;
     }
-
     function showQuestion() {
         isAnswered = false;
         const q = currentActiveQuestions[currentQuestionIndex];
