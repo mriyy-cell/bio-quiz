@@ -134,7 +134,6 @@
             transform: translateX(4px);
         }
 
-        /* キーボードバッジ (1,2,3,4) */
         .key-badge {
             background-color: #e2e8f0;
             color: #475569;
@@ -148,7 +147,6 @@
             flex-shrink: 0;
         }
 
-        /* クイズエリアヘッダー */
         .quiz-header {
             display: flex;
             justify-content: space-between;
@@ -164,7 +162,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* 連続正解バッジ */
         #streak-counter {
             font-size: 0.85rem;
             font-weight: 800;
@@ -186,7 +183,6 @@
             line-height: 1.5; 
         }
 
-        /* 解説エリア */
         #result-area { 
             margin-top: 15px; 
             padding: 16px; 
@@ -202,10 +198,9 @@
         .result-correct { background-color: #ecfdf5; border: 2px solid #a7f3d0; color: #065f46; }
         .result-wrong { background-color: #fef2f2; border: 2px solid #fecaca; color: #991b1b; }
 
-        /* フォーム入力欄 */
         .form-group { margin-bottom: 14px; text-align: left; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: #475569; }
-        .form-group input { 
+        .form-group input, .form-group select { 
             width: 100%; 
             padding: 12px; 
             border: 2px solid #e2e8f0; 
@@ -214,9 +209,10 @@
             font-size: 1rem; 
             font-family: inherit;
             outline: none;
+            background-color: #ffffff;
             transition: border-color 0.2s;
         }
-        .form-group input:focus { border-color: var(--blue); }
+        .form-group input:focus, .form-group select:focus { border-color: var(--blue); }
 
         button:disabled {
             background-color: #94a3b8 !important;
@@ -239,17 +235,29 @@
         <button id="logout-btn" class="btn btn-logout" style="display: none;">ログアウト</button>
     </div>
 
-    <!-- 2. タイトル（スタート）画面 -->
+    <!-- 2. タイトル（スタート・設定）画面 -->
     <div id="start-screen" style="display: none; margin-top: 20px;">
-        <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px dashed #cbd5e1;">
-            <p style="font-size: 1rem; color: #475569; line-height: 1.7; margin: 0; font-weight: 700;">
-                全34問のクイズに挑戦！<br>
-                💡 <span style="color: var(--primary-dark);">[1]〜[4] キー</span> で解答<br>
-                💡 <span style="color: var(--blue-dark);">[Enter] キー</span> で次へ進む
-            </p>
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="select-unit">📚 出題単元を選択</label>
+                <select id="select-unit">
+                    <!-- JavaScriptで動的生成 -->
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="select-count">❓ 出題問題数を選択</label>
+                <select id="select-count">
+                    <option value="10">10問</option>
+                    <option value="15">15問</option>
+                    <option value="20">20問</option>
+                    <option value="all">全問挑戦</option>
+                </select>
+            </div>
         </div>
-        <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; margin-top: 25px;">
-            スタート
+
+        <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; width: 100%;">
+            スタート 🚀
         </button>
     </div>
 
@@ -270,13 +278,13 @@
         <button id="next-btn" class="btn btn-blue" style="display: none; margin-top: 18px;">次の問題へ ➔</button>
     </div>
 
-    <!-- 4. 結果・スコア送信画面 -->
+    <!-- 4. 結果・成績送信画面 -->
     <div id="result-screen" style="display: none; margin-top: 20px;">
         <h2 style="margin-top: 0; color: #0f172a; font-weight: 800;">🎉 解答終了！</h2>
         <p id="final-score" style="font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 15px 0;"></p>
 
         <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">データの提出</h3>
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">📋 成績データの提出</h3>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; font-weight: 700;">必要事項を入力して送信してください。</p>
             
             <div class="form-group">
@@ -297,7 +305,7 @@
             </div>
 
             <button id="submit-score-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="sendScore()">
-                スコアを送信する
+                成績を送信する 📤
             </button>
             <p id="send-status" style="margin-top: 12px; font-weight: 700; font-size: 0.9rem;"></p>
         </div>
@@ -309,7 +317,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Firebase 設定情報
     const firebaseConfig = {
         apiKey: "AIzaSyBDjHDXa7fnOB39WI2D7eC7G_efPKZW6mk",
         authDomain: "bio-quest-5aa22.firebaseapp.com",
@@ -331,17 +338,19 @@
     const quizScreen = document.getElementById("quiz-screen");
     const resultScreen = document.getElementById("result-screen");
     const streakCounter = document.getElementById("streak-counter");
+    const selectUnit = document.getElementById("select-unit");
+    const selectCount = document.getElementById("select-count");
 
-    let questions = [];
+    let rawUnitsData = {};
+    let currentActiveQuestions = [];
     let currentQuestionIndex = 0;
     let score = 0;
-    let streak = 0; // 連続正解数の保持
+    let streak = 0;
     let isAnswered = false;
     let isSubmitted = false;
 
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
 
-    // --- Firebase 認証監視 ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
             userStatus.innerText = `👋 ようこそ、${user.displayName} さん！`;
@@ -367,11 +376,35 @@
 
     logoutBtn.addEventListener("click", () => signOut(auth));
 
-    // スタートボタンを押した時の処理
+    async function loadQuestions() {
+        try {
+            const response = await fetch('./questions.json');
+            rawUnitsData = await response.json();
+            
+            // 単元ドロップダウンの動的生成
+            selectUnit.innerHTML = "";
+            for (const key in rawUnitsData) {
+                const opt = document.createElement("option");
+                opt.value = key;
+                opt.innerText = rawUnitsData[key].title;
+                selectUnit.appendChild(opt);
+            }
+        } catch (error) {
+            console.error("問題データ読込エラー:", error);
+        }
+    }
+
     document.getElementById("start-btn").addEventListener("click", () => {
-        authSection.style.display = "none"; // ログイン表示を非表示に
+        prepareQuizPool();
+        if (currentActiveQuestions.length === 0) {
+            alert("選択された単元に問題が用意されていません。");
+            return;
+        }
+
+        authSection.style.display = "none";
         startScreen.style.display = "none";
         quizScreen.style.display = "block";
+        
         currentQuestionIndex = 0;
         score = 0;
         streak = 0;
@@ -379,23 +412,42 @@
         showQuestion();
     });
 
-    // --- クイズロジック ---
-    async function loadQuestions() {
-        try {
-            const response = await fetch('./questions.json');
-            questions = await response.json();
-        } catch (error) {
-            console.error("問題の読み込みエラー:", error);
+    function prepareQuizPool() {
+        const chosenUnitKey = selectUnit.value;
+        const chosenCountVal = selectCount.value;
+
+        let pool = [];
+
+        if (chosenUnitKey === "all") {
+            for (const key in rawUnitsData) {
+                if (rawUnitsData[key].questions) {
+                    pool = pool.concat(rawUnitsData[key].questions);
+                }
+            }
+        } else {
+            if (rawUnitsData[chosenUnitKey] && rawUnitsData[chosenUnitKey].questions) {
+                pool = [...rawUnitsData[chosenUnitKey].questions];
+            }
         }
+
+        // 抽出された問題をランダムシャッフル
+        pool.sort(() => Math.random() - 0.5);
+
+        // 指定件数で切り出し (10問 / 15問 / 20問 / 全問)
+        if (chosenCountVal !== "all") {
+            const limit = parseInt(chosenCountVal, 10);
+            pool = pool.slice(0, limit);
+        }
+
+        currentActiveQuestions = pool;
     }
 
     function showQuestion() {
         isAnswered = false;
-        const q = questions[currentQuestionIndex];
-        document.getElementById("question-number").innerText = `QUESTION ${String(currentQuestionIndex + 1).padStart(2, '0')} / ${questions.length}`;
+        const q = currentActiveQuestions[currentQuestionIndex];
+        document.getElementById("question-number").innerText = `QUESTION ${String(currentQuestionIndex + 1).padStart(2, '0')} / ${currentActiveQuestions.length}`;
         document.getElementById("question-text").innerText = q.question;
         
-        // 連続正解バッジの更新
         if (streak >= 2) {
             streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
             streakCounter.style.display = "inline-block";
@@ -408,7 +460,6 @@
         document.getElementById("result-area").style.display = "none";
         document.getElementById("next-btn").style.display = "none";
 
-        // 選択肢シャッフル
         const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
 
         shuffledOptions.forEach((option, index) => {
@@ -433,16 +484,15 @@
 
         if (selected === correct) {
             score++;
-            streak++; // 連続正解をカウントアップ
+            streak++;
             resultArea.className = "result-correct";
             resultJudge.innerText = "⭕ 正解！ Excellent!";
         } else {
-            streak = 0; // 不正解ならリセット
+            streak = 0;
             resultArea.className = "result-wrong";
             resultJudge.innerText = `❌ 不正解... （正解: ${correct}）`;
         }
 
-        // 回答後の連続正解バッジ更新
         if (streak >= 2) {
             streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
             streakCounter.style.display = "inline-block";
@@ -454,7 +504,7 @@
         resultArea.style.display = "block";
 
         const nextBtn = document.getElementById("next-btn");
-        if (currentQuestionIndex < questions.length - 1) {
+        if (currentQuestionIndex < currentActiveQuestions.length - 1) {
             nextBtn.innerText = "次の問題へ ➔ (Enter)";
             nextBtn.onclick = handleNextAction;
         } else {
@@ -472,12 +522,11 @@
 
     function showResultScreen() {
         quizScreen.style.display = "none";
-        const scorePercent = Math.round((score / questions.length) * 100);
-        document.getElementById("final-score").innerText = `スコア: ${score} / ${questions.length} 問 (${scorePercent}%)`;
+        const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
+        document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
         resultScreen.style.display = "block";
     }
 
-    // --- キーボード操作対応 ---
     document.addEventListener("keydown", (e) => {
         if (quizScreen.style.display === "block") {
             if (!isAnswered && ["1", "2", "3", "4"].includes(e.key)) {
@@ -501,7 +550,6 @@
         }
     });
 
-    // --- 成績送信 ---
     window.sendScore = function() {
         if (isSubmitted) return;
 
@@ -521,14 +569,14 @@
         statusText.innerText = "送信中...";
         submitBtn.disabled = true;
 
-        const scorePercentValue = Math.round((score / questions.length) * 100);
+        const scorePercentValue = Math.round((score / currentActiveQuestions.length) * 100);
 
         const formData = new FormData();
         formData.append("entry.99129247", grade);
         formData.append("entry.1271020973", classNum);
         formData.append("entry.1313275559", number);
         formData.append("entry.1655607218", name);
-        formData.append("entry.147621973", `${score} / ${questions.length}問`);
+        formData.append("entry.147621973", `${score} / ${currentActiveQuestions.length}問`);
         formData.append("entry.1382560193", scorePercentValue);
 
         fetch(GOOGLE_FORM_URL, {
