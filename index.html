@@ -577,7 +577,7 @@
     });
 
     // スコア送信 (Googleフォーム)
-    window.sendScore = function() {
+window.sendScore = function() {
         if (isSubmitted) return;
 
         const grade = document.getElementById("input-grade").value;
@@ -598,6 +598,11 @@
 
         const scorePercentValue = Math.round((score / currentActiveQuestions.length) * 100);
 
+        // 選択された単元名を取得
+        const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
+        // 実施問題数を取得
+        const totalQuestionCount = `${currentActiveQuestions.length}問`;
+
         const formData = new FormData();
         formData.append("entry.99129247", grade);
         formData.append("entry.1271020973", classNum);
@@ -605,6 +610,8 @@
         formData.append("entry.1655607218", name);
         formData.append("entry.147621973", `${score} / ${currentActiveQuestions.length}問`);
         formData.append("entry.1382560193", scorePercentValue);
+        formData.append("entry.1018835285", selectedUnitText);
+        formData.append("entry.1035606462", totalQuestionCount);
 
         fetch(GOOGLE_FORM_URL, {
             method: "POST",
@@ -622,7 +629,6 @@
             statusText.innerText = "送信に失敗しました。もう一度試してください。";
             submitBtn.disabled = false;
         });
-    };
-</script>
+    };</script>
 </body>
 </html>
