@@ -291,7 +291,7 @@
         </div>
 
         <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; width: 100%;">
-            スタート 🚀
+            スタート 🕴️
         </button>
     </div>
 
@@ -318,7 +318,7 @@
         <p id="final-score" style="font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 15px 0;"></p>
 
         <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">📋 成績データの提出</h3>
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">📋 スコアの提出</h3>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; font-weight: 700;">必要事項を入力して送信してください。</p>
             
             <div class="form-group">
@@ -339,7 +339,7 @@
             </div>
 
             <button id="submit-score-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="sendScore()">
-                成績を送信する 📤
+                スコアを送信する　🤲
             </button>
             <p id="send-status" style="margin-top: 12px; font-weight: 700; font-size: 0.9rem;"></p>
         </div>
@@ -350,7 +350,7 @@
             <h2>🎉 送信完了！</h2>
             <p>成績データの提出が完了しました。<br>お疲れ様でした！</p>
             <button id="back-to-title-btn" class="btn btn-primary" style="width: 100%;">
-                タイトルに戻る 🏠
+                タイトルに戻る 😎
             </button>
         </div>
     </div>
@@ -398,7 +398,7 @@
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            userStatus.innerText = `👋 ようこそ、${user.displayName} さん！`;
+            userStatus.innerText = ` ようこそ、${user.displayName} さん！`;
             loginBtn.style.display = "none";
             logoutBtn.style.display = "inline-block";
             authSection.style.display = "block";
