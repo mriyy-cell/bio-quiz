@@ -12,7 +12,6 @@
             --blue: #3b82f6;
             --blue-dark: #2563eb;
             --accent: #f59e0b;
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             --card-bg: #ffffff;
             --text-main: #334155;
         }
@@ -63,7 +62,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* ボタンデザイン */
         .btn {
             padding: 14px 24px;
             border: none;
@@ -109,7 +107,6 @@
             box-shadow: 0 3px 0 #dc2626;
         }
 
-        /* 選択肢ボタン */
         .option-btn {
             display: flex;
             align-items: center;
@@ -239,7 +236,7 @@
     <div id="start-screen" style="display: none; margin-top: 20px;">
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
             <div class="form-group">
-                <label for="select-unit">出題単元を選択</label>
+                <label for="select-unit">📚 出題単元を選択</label>
                 <select id="select-unit">
                     <!-- JavaScriptで動的生成 -->
                 </select>
@@ -381,22 +378,25 @@
             const response = await fetch('./questions.json');
             rawUnitsData = await response.json();
             
-            // 単元ドロップダウンの動的生成
+            // 単元ドロップダウンのクリア
             selectUnit.innerHTML = "";
 
-            // 1. 先頭に「すべての単元」を追加
+            // 1. 全範囲の選択肢を追加
             const allOpt = document.createElement("option");
             allOpt.value = "all";
             allOpt.innerText = "✨ すべての単元（全範囲）";
             selectUnit.appendChild(allOpt);
 
-            // 2. JSON内の各単元を追加
+            // 2. JSON内の各単元オブジェクトから title を確実に抽出して追加
             for (const key in rawUnitsData) {
-                const opt = document.createElement("option");
-                opt.value = key;
-                // title または name を表示（どちらもない場合はフォールバック）
-                opt.innerText = rawUnitsData[key].title || rawUnitsData[key].name || `単元 (${key})`;
-                selectUnit.appendChild(opt);
+                const unitObj = rawUnitsData[key];
+                if (unitObj && typeof unitObj === 'object') {
+                    const opt = document.createElement("option");
+                    opt.value = key;
+                    // titleが存在する場合はそのテキストを表示
+                    opt.innerText = unitObj.title ? unitObj.title : `単元 ${key}`;
+                    selectUnit.appendChild(opt);
+                }
             }
         } catch (error) {
             console.error("問題データ読込エラー:", error);
@@ -429,13 +429,15 @@
 
         if (chosenUnitKey === "all") {
             for (const key in rawUnitsData) {
-                if (rawUnitsData[key].questions) {
-                    pool = pool.concat(rawUnitsData[key].questions);
+                const unit = rawUnitsData[key];
+                if (unit && Array.isArray(unit.questions)) {
+                    pool = pool.concat(unit.questions);
                 }
             }
         } else {
-            if (rawUnitsData[chosenUnitKey] && rawUnitsData[chosenUnitKey].questions) {
-                pool = [...rawUnitsData[chosenUnitKey].questions];
+            const selectedUnit = rawUnitsData[chosenUnitKey];
+            if (selectedUnit && Array.isArray(selectedUnit.questions)) {
+                pool = [...selectedUnit.questions];
             }
         }
 
