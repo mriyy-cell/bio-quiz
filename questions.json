@@ -1,613 +1,1040 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>生物基礎 一問一答</title>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --blue: #3b82f6;
-            --blue-dark: #2563eb;
-            --accent: #f59e0b;
-            --card-bg: #ffffff;
-            --text-main: #334155;
-        }
-
-        body {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
-            background: #e2e8f0;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-        }
-
-        .quiz-container {
-            background-color: var(--card-bg);
-            border-radius: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            max-width: 520px;
-            width: 100%;
-            padding: 30px;
-            box-sizing: border-box;
-            text-align: center;
-            border: 4px solid #f1f5f9;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .quiz-container::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b);
-        }
-
-        h1 {
-            font-size: 1.6rem;
-            color: #0f172a;
-            margin-top: 5px;
-            margin-bottom: 20px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .btn {
-            padding: 14px 24px;
-            border: none;
-            border-radius: 16px;
-            font-size: 1rem;
-            font-weight: 700;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin: 6px 0;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.15);
-        }
-
-        .btn-primary { 
-            background-color: var(--primary); 
-            color: white; 
-            box-shadow: 0 4px 0 var(--primary-dark);
-        }
-        .btn-primary:hover { background-color: #34d399; }
-
-        .btn-blue { 
-            background-color: var(--blue); 
-            color: white; 
-            width: 100%;
-            box-shadow: 0 4px 0 var(--blue-dark);
-        }
-        .btn-blue:hover { background-color: #60a5fa; }
-
-        .btn-logout { 
-            background-color: #ef4444; 
-            color: white; 
-            font-size: 0.85rem; 
-            padding: 8px 16px; 
-            border-radius: 12px;
-            box-shadow: 0 3px 0 #dc2626;
-        }
-
-        .option-btn {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 14px 18px;
-            margin-bottom: 12px;
-            background-color: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            font-size: 1rem;
-            font-family: inherit;
-            font-weight: 700;
-            color: var(--text-main);
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-sizing: border-box;
-        }
-        .option-btn:hover {
-            background-color: #f1f5f9;
-            border-color: #cbd5e1;
-            transform: translateX(4px);
-        }
-
-        .key-badge {
-            background-color: #e2e8f0;
-            color: #475569;
-            border-radius: 8px;
-            padding: 2px 8px;
-            font-size: 0.85rem;
-            margin-right: 12px;
-            font-weight: 800;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 2px 0 #cbd5e1;
-            flex-shrink: 0;
-        }
-
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        #question-number { 
-            font-size: 0.9rem; 
-            font-weight: 800;
-            color: var(--primary); 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        #streak-counter {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #d97706;
-            background-color: #fef3c7;
-            padding: 4px 10px;
-            border-radius: 20px;
-            border: 1px solid #fde68a;
-            display: none;
-            animation: popIn 0.2s ease;
-        }
-
-        #question-text { 
-            font-size: 1.15rem; 
-            font-weight: 700; 
-            color: #1e293b;
-            margin-bottom: 22px; 
-            text-align: left; 
-            line-height: 1.5; 
-        }
-
-        #result-area { 
-            margin-top: 15px; 
-            padding: 16px; 
-            border-radius: 16px; 
-            display: none; 
-            text-align: left; 
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        .result-correct { background-color: #ecfdf5; border: 2px solid #a7f3d0; color: #065f46; }
-        .result-wrong { background-color: #fef2f2; border: 2px solid #fecaca; color: #991b1b; }
-
-        .form-group { margin-bottom: 14px; text-align: left; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: #475569; }
-        .form-group input, .form-group select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 2px solid #e2e8f0; 
-            border-radius: 12px; 
-            box-sizing: border-box; 
-            font-size: 1rem; 
-            font-family: inherit;
-            outline: none;
-            background-color: #ffffff;
-            transition: border-color 0.2s;
-        }
-        .form-group input:focus, .form-group select:focus { border-color: var(--blue); }
-
-        button:disabled {
-            background-color: #94a3b8 !important;
-            box-shadow: none !important;
-            cursor: not-allowed !important;
-            opacity: 0.7;
-            transform: none !important;
-        }
-    </style>
-</head>
-<body>
-
-<div class="quiz-container">
-    <h1>🧬 生物基礎 一問一答 🔬</h1>
-
-    <!-- 1. 認証エリア -->
-    <div id="auth-section">
-        <p id="user-status" style="color: #64748b; font-weight: 700;">読み込み中...</p>
-        <button id="login-btn" class="btn btn-primary" style="display: none;">Googleでログイン</button>
-        <button id="logout-btn" class="btn btn-logout" style="display: none;">ログアウト</button>
-    </div>
-
-    <!-- 2. タイトル（スタート・設定）画面 -->
-    <div id="start-screen" style="display: none; margin-top: 20px;">
-        <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
-            <div class="form-group">
-                <label for="select-unit">📚 出題単元を選択</label>
-                <select id="select-unit">
-                    <!-- JavaScriptで動的生成 -->
-                </select>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 0;">
-                <label for="select-count">❓ 出題問題数を選択</label>
-                <select id="select-count">
-                    <option value="10">10問</option>
-                    <option value="15">15問</option>
-                    <option value="20">20問</option>
-                    <option value="all">全問挑戦</option>
-                </select>
-            </div>
-        </div>
-
-        <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; width: 100%;">
-            スタート 🚀
-        </button>
-    </div>
-
-    <!-- 3. クイズ画面 -->
-    <div id="quiz-screen" style="display: none; margin-top: 20px;">
-        <div class="quiz-header">
-            <div id="question-number">QUESTION 01</div>
-            <div id="streak-counter">🔥 0問連続正解中！</div>
-        </div>
-        <div id="question-text">読み込み中...</div>
-        <div id="options-container"></div>
-        
-        <div id="result-area">
-            <div id="result-judge" style="font-weight: 800; font-size: 1.1rem;"></div>
-            <div id="result-explanation" style="margin-top: 6px; font-size: 0.95rem; line-height: 1.5;"></div>
-        </div>
-
-        <button id="next-btn" class="btn btn-blue" style="display: none; margin-top: 18px;">次の問題へ ➔</button>
-    </div>
-
-    <!-- 4. 結果・成績送信画面 -->
-    <div id="result-screen" style="display: none; margin-top: 20px;">
-        <h2 style="margin-top: 0; color: #0f172a; font-weight: 800;">🎉 解答終了！</h2>
-        <p id="final-score" style="font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 15px 0;"></p>
-
-        <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">📋 成績データの提出</h3>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; font-weight: 700;">必要事項を入力して送信してください。</p>
-            
-            <div class="form-group">
-                <label for="input-grade">学年</label>
-                <input type="number" id="input-grade" placeholder="例: 1">
-            </div>
-            <div class="form-group">
-                <label for="input-class">組</label>
-                <input type="number" id="input-class" placeholder="例: 2">
-            </div>
-            <div class="form-group">
-                <label for="input-number">出席番号</label>
-                <input type="number" id="input-number" placeholder="例: 15">
-            </div>
-            <div class="form-group">
-                <label for="input-name">氏名</label>
-                <input type="text" id="input-name" placeholder="例: 山田 太郎">
-            </div>
-
-            <button id="submit-score-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="sendScore()">
-                成績を送信する 📤
-            </button>
-            <p id="send-status" style="margin-top: 12px; font-weight: 700; font-size: 0.9rem;"></p>
-        </div>
-    </div>
-</div>
-
-<!-- Firebase SDK -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyBDjHDXa7fnOB39WI2D7eC7G_efPKZW6mk",
-        authDomain: "bio-quest-5aa22.firebaseapp.com",
-        projectId: "bio-quest-5aa22",
-        storageBucket: "bio-quest-5aa22.firebasestorage.app",
-        messagingSenderId: "114808918613",
-        appId: "1:114808918613:web:ad4689c75545faf60dbadc"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    const authSection = document.getElementById("auth-section");
-    const userStatus = document.getElementById("user-status");
-    const loginBtn = document.getElementById("login-btn");
-    const logoutBtn = document.getElementById("logout-btn");
-    const startScreen = document.getElementById("start-screen");
-    const quizScreen = document.getElementById("quiz-screen");
-    const resultScreen = document.getElementById("result-screen");
-    const streakCounter = document.getElementById("streak-counter");
-    const selectUnit = document.getElementById("select-unit");
-    const selectCount = document.getElementById("select-count");
-
-    let rawUnitsData = {};
-    let currentActiveQuestions = [];
-    let currentQuestionIndex = 0;
-    let score = 0;
-    let streak = 0;
-    let isAnswered = false;
-    let isSubmitted = false;
-
-    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            userStatus.innerText = `👋 ようこそ、${user.displayName} さん！`;
-            loginBtn.style.display = "none";
-            logoutBtn.style.display = "inline-block";
-            authSection.style.display = "block";
-            startScreen.style.display = "block";
-            loadQuestions();
-        } else {
-            userStatus.innerText = "🔒 ログインが必要です。";
-            loginBtn.style.display = "inline-block";
-            logoutBtn.style.display = "none";
-            authSection.style.display = "block";
-            startScreen.style.display = "none";
-            quizScreen.style.display = "none";
-            resultScreen.style.display = "none";
-        }
-    });
-
-    loginBtn.addEventListener("click", () => {
-        signInWithPopup(auth, provider).catch(error => alert("ログインエラー: " + error.message));
-    });
-
-    logoutBtn.addEventListener("click", () => signOut(auth));
-
-    async function loadQuestions() {
-        try {
-            const response = await fetch('./questions.json');
-            rawUnitsData = await response.json();
-            
-            // 単元ドロップダウンのクリア
-            selectUnit.innerHTML = "";
-
-            // 1. 全範囲の選択肢を追加
-            const allOpt = document.createElement("option");
-            allOpt.value = "all";
-            allOpt.innerText = "✨ すべての単元（全範囲）";
-            selectUnit.appendChild(allOpt);
-
-            // 2. JSON内の各単元オブジェクトから title を確実に抽出して追加
-            for (const key in rawUnitsData) {
-                const unitObj = rawUnitsData[key];
-                if (unitObj && typeof unitObj === 'object') {
-                    const opt = document.createElement("option");
-                    opt.value = key;
-                    // titleが存在する場合はそのテキストを表示
-                    opt.innerText = unitObj.title ? unitObj.title : `単元 ${key}`;
-                    selectUnit.appendChild(opt);
-                }
-            }
-        } catch (error) {
-            console.error("問題データ読込エラー:", error);
-        }
-    }
-
-    document.getElementById("start-btn").addEventListener("click", () => {
-        prepareQuizPool();
-        if (currentActiveQuestions.length === 0) {
-            alert("選択された単元に問題が用意されていません。");
-            return;
-        }
-
-        authSection.style.display = "none";
-        startScreen.style.display = "none";
-        quizScreen.style.display = "block";
-        
-        currentQuestionIndex = 0;
-        score = 0;
-        streak = 0;
-        isSubmitted = false;
-        showQuestion();
-    });
-
-    function prepareQuizPool() {
-        const chosenUnitKey = selectUnit.value;
-        const chosenCountVal = selectCount.value;
-
-        let pool = [];
-
-        if (chosenUnitKey === "all") {
-            for (const key in rawUnitsData) {
-                const unit = rawUnitsData[key];
-                if (unit && Array.isArray(unit.questions)) {
-                    pool = pool.concat(unit.questions);
-                }
-            }
-        } else {
-            const selectedUnit = rawUnitsData[chosenUnitKey];
-            if (selectedUnit && Array.isArray(selectedUnit.questions)) {
-                pool = [...selectedUnit.questions];
-            }
-        }
-
-        // 抽出された問題をランダムシャッフル
-        pool.sort(() => Math.random() - 0.5);
-
-        // 指定件数で切り出し (10問 / 15問 / 20問 / 全問)
-        if (chosenCountVal !== "all") {
-            const limit = parseInt(chosenCountVal, 10);
-            pool = pool.slice(0, limit);
-        }
-
-        currentActiveQuestions = pool;
-    }
-
-    function showQuestion() {
-        isAnswered = false;
-        const q = currentActiveQuestions[currentQuestionIndex];
-        document.getElementById("question-number").innerText = `QUESTION ${String(currentQuestionIndex + 1).padStart(2, '0')} / ${currentActiveQuestions.length}`;
-        document.getElementById("question-text").innerText = q.question;
-        
-        if (streak >= 2) {
-            streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
-            streakCounter.style.display = "inline-block";
-        } else {
-            streakCounter.style.display = "none";
-        }
-
-        const optionsContainer = document.getElementById("options-container");
-        optionsContainer.innerHTML = "";
-        document.getElementById("result-area").style.display = "none";
-        document.getElementById("next-btn").style.display = "none";
-
-        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-
-        shuffledOptions.forEach((option, index) => {
-            const btn = document.createElement("button");
-            btn.className = "option-btn";
-            btn.innerHTML = `<span class="key-badge">${index + 1}</span> <span>${option}</span>`;
-            btn.onclick = () => checkAnswer(option, q.answer, q.explanation);
-            optionsContainer.appendChild(btn);
-        });
-    }
-
-    function checkAnswer(selected, correct, explanation) {
-        if (isAnswered) return;
-        isAnswered = true;
-
-        const buttons = document.querySelectorAll(".option-btn");
-        buttons.forEach(btn => btn.disabled = true);
-
-        const resultArea = document.getElementById("result-area");
-        const resultJudge = document.getElementById("result-judge");
-        const resultExplanation = document.getElementById("result-explanation");
-
-        if (selected === correct) {
-            score++;
-            streak++;
-            resultArea.className = "result-correct";
-            resultJudge.innerText = "⭕ 正解！ Excellent!";
-        } else {
-            streak = 0;
-            resultArea.className = "result-wrong";
-            resultJudge.innerText = `❌ 不正解... （正解: ${correct}）`;
-        }
-
-        if (streak >= 2) {
-            streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
-            streakCounter.style.display = "inline-block";
-        } else {
-            streakCounter.style.display = "none";
-        }
-
-        resultExplanation.innerText = explanation;
-        resultArea.style.display = "block";
-
-        const nextBtn = document.getElementById("next-btn");
-        if (currentQuestionIndex < currentActiveQuestions.length - 1) {
-            nextBtn.innerText = "次の問題へ ➔ (Enter)";
-            nextBtn.onclick = handleNextAction;
-        } else {
-            nextBtn.innerText = "結果を見る ➔ (Enter)";
-            nextBtn.onclick = showResultScreen;
-        }
-        nextBtn.style.display = "block";
-    }
-
-    function handleNextAction() {
-        if (!isAnswered) return;
-        currentQuestionIndex++;
-        showQuestion();
-    }
-
-    function showResultScreen() {
-        quizScreen.style.display = "none";
-        const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
-        document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
-        resultScreen.style.display = "block";
-    }
-
-    document.addEventListener("keydown", (e) => {
-        if (quizScreen.style.display === "block") {
-            if (!isAnswered && ["1", "2", "3", "4"].includes(e.key)) {
-                const index = parseInt(e.key) - 1;
-                const buttons = document.querySelectorAll(".option-btn");
-                if (buttons[index]) {
-                    buttons[index].click();
-                }
-            }
-            else if (isAnswered && e.key === "Enter") {
-                const nextBtn = document.getElementById("next-btn");
-                if (nextBtn && nextBtn.style.display !== "none") {
-                    nextBtn.click();
-                }
-            }
-        }
-        else if (resultScreen.style.display === "block" && e.key === "Enter") {
-            if (!isSubmitted) {
-                sendScore();
-            }
-        }
-    });
-
-    window.sendScore = function() {
-        if (isSubmitted) return;
-
-        const grade = document.getElementById("input-grade").value;
-        const classNum = document.getElementById("input-class").value;
-        const number = document.getElementById("input-number").value;
-        const name = document.getElementById("input-name").value;
-        const statusText = document.getElementById("send-status");
-        const submitBtn = document.getElementById("submit-score-btn");
-
-        if (!grade || !classNum || !number || !name) {
-            alert("学年、組、出席番号、氏名をすべて入力してください。");
-            return;
-        }
-
-        statusText.style.color = "#3b82f6";
-        statusText.innerText = "送信中...";
-        submitBtn.disabled = true;
-
-        const scorePercentValue = Math.round((score / currentActiveQuestions.length) * 100);
-
-        const formData = new FormData();
-        formData.append("entry.99129247", grade);
-        formData.append("entry.1271020973", classNum);
-        formData.append("entry.1313275559", number);
-        formData.append("entry.1655607218", name);
-        formData.append("entry.147621973", `${score} / ${currentActiveQuestions.length}問`);
-        formData.append("entry.1382560193", scorePercentValue);
-
-        fetch(GOOGLE_FORM_URL, {
-            method: "POST",
-            mode: "no-cors",
-            body: formData
-        }).then(() => {
-            isSubmitted = true;
-            statusText.style.color = "#10b981";
-            statusText.innerText = "送信が完了しました！お疲れ様でした。";
-            submitBtn.innerText = "送信完了";
-            submitBtn.disabled = true;
-        }).catch(error => {
-            console.error("送信エラー:", error);
-            statusText.style.color = "#ef4444";
-            statusText.innerText = "送信に失敗しました。もう一度試してください。";
-            submitBtn.disabled = false;
-        });
-    };
-</script>
-
-</body>
-</html>
+[
+  {
+    "title": "生物の特徴と構造",
+    "questions": [
+      {
+        "id": 1,
+        "question": "生物の形質が，長い年月をかけて代を重ねる間に変化すること。",
+        "options": ["進化", "系統", "変異", "適応"],
+        "answer": "進化",
+        "explanation": "長い年月をかけて親から子へ世代を経るなかで、形質が変化していく現象を「進化」といいます。"
+      },
+      {
+        "id": 2,
+        "question": "生物の進化の道筋。",
+        "options": ["系統", "進化", "系統樹", "分化"],
+        "answer": "系統",
+        "explanation": "生物が辿ってきた進化の歴史や道筋のことを「系統」とよびます。"
+      },
+      {
+        "id": 3,
+        "question": "系統を樹木のようなかたちで表した図。",
+        "options": ["系統樹", "食物網", "樹形図", "分類樹"],
+        "answer": "系統樹",
+        "explanation": "生物間の系統関係（進化の枝分かれ）を樹木のような形で視覚化したものを「系統樹」といいます。"
+      },
+      {
+        "id": 4,
+        "question": "生物を分類する際の基本的な単位。同じ単位の個体どうしは，形態的・生理的な特徴が共通しており，交配によって子孫を残すことができる。",
+        "options": ["種", "属", "科", "個体"],
+        "answer": "種",
+        "explanation": "生物分類の基本単位は「種（しゅ）」です。同じ種の個体同士は交配して生殖能力のある子孫を残せます。"
+      },
+      {
+        "id": 5,
+        "question": "生物のからだの構造上・機能上の基本単位。",
+        "options": ["細胞", "組織", "器官", "分子"],
+        "answer": "細胞",
+        "explanation": "すべての生物のからだは「細胞」を基本単位として成り立っています。"
+      },
+      {
+        "id": 6,
+        "question": "光学顕微鏡で，ステージにのせて利用するミクロメーター。1目盛りは10μmを示し，顕微鏡の倍率によって変化しない。",
+        "options": ["対物ミクロメーター", "接眼ミクロメーター", "プレパラート", "カバーガラス"],
+        "answer": "対物ミクロメーター",
+        "explanation": "ステージに載せる「対物ミクロメーター」の1目盛りの長さ（10μm）は倍率を変えても変わりません。"
+      },
+      {
+        "id": 7,
+        "question": "核を持たず，発達した細胞小器官がみられない細胞。",
+        "options": ["原核細胞", "真核細胞", "単細胞", "細菌細胞"],
+        "answer": "原核細胞",
+        "explanation": "核膜で包まれた「核」を持たず、ミトコンドリアなどの発達した細胞小器官を持たない細胞を「原核細胞」といいます。"
+      },
+      {
+        "id": 8,
+        "question": "核を持ち，発達した細胞小器官がみられる細胞。",
+        "options": ["真核細胞", "原核細胞", "多細胞", "植物細胞"],
+        "answer": "真核細胞",
+        "explanation": "明確な「核」や各種の細胞小器官（ミトコンドリア・葉緑体など）を持つ複雑な細胞を「真核細胞」といいます。"
+      },
+      {
+        "id": 9,
+        "question": "原核細胞からなる生物。大腸菌やシアノバクテリアなどの細菌が含まれる。",
+        "options": ["原核生物", "真核生物", "原生生物", "菌類"],
+        "answer": "原核生物",
+        "explanation": "原核細胞のみで身体が構成されている生物を「原核生物」といいます（例：大腸菌、シアノバクテリア、乳酸菌など）。"
+      },
+      {
+        "id": 10,
+        "question": "真核細胞からなる生物。単細胞生物も多細胞生物もいる。",
+        "options": ["真核生物", "原核生物", "多細胞生物", "後生生物"],
+        "answer": "真核生物",
+        "explanation": "真核細胞からなる生物を「真核生物」といいます。酵母やゾウリムシのような単細胞から、植物・動物のような多細胞まで様々です。"
+      },
+      {
+        "id": 11,
+        "question": "1個の細胞からできている生物。原核生物と真核生物がある。",
+        "options": ["単細胞生物", "多細胞生物", "原核生物", "微生物"],
+        "answer": "単細胞生物",
+        "explanation": "からだがただ1つの細胞で成り立っている生物を「単細胞生物」といいます。"
+      },
+      {
+        "id": 12,
+        "question": "多数の細胞からできている生物。全て真核生物である。",
+        "options": ["多細胞生物", "単細胞生物", "真核生物", "群体"],
+        "answer": "多細胞生物",
+        "explanation": "多数の細胞が集まり、それぞれ役割分担して出来ている生物を「多細胞生物」といいます。すべて真核生物です。"
+      },
+      {
+        "id": 13,
+        "question": "真核細胞の中にあって，様々な機能を持つ構造体。核，ミトコンドリア，葉緑体などが含まれる。",
+        "options": ["細胞小器官", "細胞質基質", "細胞骨格", "膜構造"],
+        "answer": "細胞小器官",
+        "explanation": "真核細胞の内部で特定の働きを担う構造の総称を「細胞小器官（オルガネラ）」といいます。"
+      },
+      {
+        "id": 14,
+        "question": "遺伝物質であるDNAを含み，酢酸カーミン溶液で赤く染まる細胞小器官。",
+        "options": ["核", "ミトコンドリア", "葉緑体", "中心体"],
+        "answer": "核",
+        "explanation": "DNAを保管している「核」は、塩基性色素である酢酸カーミンや酢酸オルセインで赤～赤紫に染まります。"
+      },
+      {
+        "id": 15,
+        "question": "細胞の中で核以外の部分。",
+        "options": ["細胞質", "細胞質基質", "細胞体", "細胞膜"],
+        "answer": "細胞質",
+        "explanation": "細胞全体から「核」を除いた領域全体を「細胞質」と呼びます。"
+      },
+      {
+        "id": 16,
+        "question": "エネルギーをつくり出す細胞小器官。呼吸の場となる。",
+        "options": ["ミトコンドリア", "葉緑体", "リボソーム", "高キ体"],
+        "answer": "ミトコンドリア",
+        "explanation": "酸素を使って有機物を分解し、生命活動に必要なATP（エネルギー）を大量に生成する場が「ミトコンドリア」です。"
+      },
+      {
+        "id": 17,
+        "question": "光エネルギーを用いて有機物を合成する細胞小器官。光合成の場となる。",
+        "options": ["葉緑体", "ミトコンドリア", "液胞", "細胞壁"],
+        "answer": "葉緑体",
+        "explanation": "植物などの細胞に存在し、光エネルギーを利用して水と二酸化炭素からデンプン等の有機物を作るのが「葉緑体」です。"
+      },
+      {
+        "id": 18,
+        "question": "細胞質の最外層にあり，細胞への物質の出入りに関わる膜構造。",
+        "options": ["細胞膜", "細胞壁", "核膜", "液胞膜"],
+        "answer": "細胞膜",
+        "explanation": "細胞の内外を隔て、必要な物質を取り込み不要な物質を排出する選択的透過性を持つ薄い膜が「細胞膜」です。"
+      },
+      {
+        "id": 19,
+        "question": "細胞膜の外側を覆う丈夫な構造。原核細胞や植物細胞でみられる。細胞のかたちを保つ働きがある。",
+        "options": ["細胞壁", "細胞膜", "クチクラ層", "細胞質"],
+        "answer": "細胞壁",
+        "explanation": "主にセルロースでできており、植物や原核生物の細胞を保護し形を保持する丈夫な構造が「細胞壁」です。"
+      },
+      {
+        "id": 20,
+        "question": "有機物や無機塩類などを含む液体で満たされた構造。成長した植物細胞で発達している。細胞内の塩類濃度の調節，物質の貯蔵などを行う。",
+        "options": ["液胞", "葉緑体", "細胞質基質", "リソソーム"],
+        "answer": "液胞",
+        "explanation": "成熟した植物細胞で特に大きく発達し、細胞液（水・色素・糖・塩類など）で満たされているのが「液胞」です。"
+      },
+      {
+        "id": 21,
+        "question": "細胞内で，細胞小器官の間を満たす液状成分。様々な化学反応の場である。",
+        "options": ["細胞質基質（サイトゾル）", "細胞液", "体液", "血漿"],
+        "answer": "細胞質基質（サイトゾル）",
+        "explanation": "細胞質から各種の細胞小器官を除いた液体部分を「細胞質基質（サイトゾル）」と呼び、酵素による反応が多数行われます。"
+      },
+      {
+        "id": 22,
+        "question": "生体内で起こる，物質の合成や分解などの様々な化学反応。",
+        "options": ["代謝", "同化", "異化", "触媒"],
+        "answer": "代謝",
+        "explanation": "生物の体内で生じるあらゆる化学反応の総称を「代謝」といいます。同化と異化に分けられます。"
+      },
+      {
+        "id": 23,
+        "question": "生体内において，単純な物質から，からだを構成する物質のような複雑な物質を合成する反応。エネルギーを吸収する。",
+        "options": ["同化", "異化", "呼吸", "消化"],
+        "answer": "同化",
+        "explanation": "単純な物質を組み合わせて複雑な物質を作り出す（エネルギーを蓄える）反応を「同化」といいます（例：光合成）。"
+      },
+      {
+        "id": 24,
+        "question": "生体内において，からだを構成する物質のような複雑な物質を，単純な物質に分解する反応。エネルギーを放出する。",
+        "options": ["異化", "同化", "光合成", "吸収"],
+        "answer": "異化",
+        "explanation": "複雑な有機物を単純な物質に分解して（エネルギーを取り出す）反応を「異化」といいます（例：呼吸）。"
+      },
+      {
+        "id": 25,
+        "question": "生体内でエネルギーの吸収や放出が行われる際に，仲立ちとなる物質。この物質は，全ての生物で共通に利用され，エネルギーの通貨とよばれる。",
+        "options": ["ATP（アデノシン三リン酸）", "ADP（アデノシン二リン酸）", "DNA", "RNA"],
+        "answer": "ATP（アデノシン三リン酸）",
+        "explanation": "エネルギーの受け渡しを媒介するため「生体のエネルギー通貨」と呼ばれる物質が「ATP」です。"
+      },
+      {
+        "id": 26,
+        "question": "ATP分子内のリン酸どうしの結合。切れると多量のエネルギーが放出される。",
+        "options": ["高エネルギーリン酸結合", "ペプチド結合", "水素結合", "共有結合"],
+        "answer": "高エネルギーリン酸結合",
+        "explanation": "ATPのリン酸同士を結びつけている結合です。これが分解されてADPになるときに大きなエネルギーが放出されます。"
+      },
+      {
+        "id": 27,
+        "question": "二酸化炭素と水を材料に，光エネルギーを使って有機物（デンプンなど）を合成する反応。主に植物が行う。",
+        "options": ["光合成", "呼吸", "同化作用", "化学合成"],
+        "answer": "光合成",
+        "explanation": "葉緑体で光のエネルギーを使い、二酸化炭素と水から有機物を合成する同化反応が「光合成」です。"
+      },
+      {
+        "id": 28,
+        "question": "細胞内のグルコース（ブドウ糖）などの有機物を分解してエネルギーを得る反応。",
+        "options": ["呼吸（細胞呼吸）", "光合成", "発酵", "燃焼"],
+        "answer": "呼吸（細胞呼吸）",
+        "explanation": "有機物を分解し、生命活動に必要なATPを取り出す異化反応を「呼吸（細胞呼吸）」といいます。"
+      },
+      {
+        "id": 29,
+        "question": "無機物から有機物を合成する仕組みを持っており，外部から有機物を取り入れなくても生命活動が可能な生物。",
+        "options": ["独立栄養生物", "従属栄養生物", "分解者", "寄生生物"],
+        "answer": "独立栄養生物",
+        "explanation": "光合成などで無機物（二酸化炭素など）から自前で有機物を作れる植物などの生物を「独立栄養生物」といいます。"
+      },
+      {
+        "id": 30,
+        "question": "外部から有機物を取り込み，それに依存して生命活動を行っている生物。",
+        "options": ["従属栄養生物", "独立栄養生物", "生産者", "自律栄養生物"],
+        "answer": "従属栄養生物",
+        "explanation": "自分で有機物を作れず、他の生物が作った有機物を食べて生きている動物や菌類などを「従属栄養生物」といいます。"
+      },
+      {
+        "id": 31,
+        "question": "それ自身は反応前後で変化せず，化学反応を促進する物質。",
+        "options": ["触媒", "基質", "酵素", "生成物"],
+        "answer": "触媒",
+        "explanation": "自らは変化せずに化学反応のスピードを劇的に速める働きを持つ物質全般を「触媒」といいます。"
+      },
+      {
+        "id": 32,
+        "question": "生体内の化学反応を促進する触媒。生体内でつくられ，タンパク質を主成分とする。",
+        "options": ["酵素", "無機触媒", "ホルモン", "抗体"],
+        "answer": "酵素",
+        "explanation": "生物の体内でつくられ、タンパク質を主成分とする生体触媒を「酵素」と呼びます。"
+      },
+      {
+        "id": 33,
+        "question": "酵素が作用する物質。",
+        "options": ["基質", "触媒", "活性部位", "生成物"],
+        "answer": "基質",
+        "explanation": "酵素が反応を促す対象となる特定相手（物質）のことを「基質」と呼びます。"
+      },
+      {
+        "id": 34,
+        "question": "酵素が特定の物質（基質）にのみ作用する性質。",
+        "options": ["基質特異性", "最適温度", "最適pH", "変性"],
+        "answer": "基質特異性",
+        "explanation": "酵素の活性部位の形にピッタリ合う特定の基質としか結合して反応しない性質を「基質特異性」といいます。"
+      }
+    ]
+  },
+  {
+    "title": "遺伝子とその働き",
+    "questions": [
+      {
+        "id": 1,
+        "question": "生物がもつ特徴（形質）を決めるもの。その本体はDNAであり，親から子へと伝わることで遺伝情報が伝達される。",
+        "answer": "遺伝子"
+      },
+      {
+        "id": 2,
+        "question": "遺伝子の本体。ヌクレオチドという構成単位が，多数連なった構造を持つ。",
+        "answer": "DNA（デオキシリボ核酸）"
+      },
+      {
+        "id": 3,
+        "question": "真核細胞の核内に含まれる，DNAとタンパク質からなる構造。通常は糸状になって核内で分散しているが，細胞分裂の分裂期になると，凝縮して太く短いひも状になる。",
+        "answer": "染色体"
+      },
+      {
+        "id": 4,
+        "question": "DNAの構成単位。リン酸，糖，塩基からできている。",
+        "answer": "ヌクレオチド"
+      },
+      {
+        "id": 5,
+        "question": "DNAに含まれている糖。",
+        "answer": "デオキシリボース"
+      },
+      {
+        "id": 6,
+        "question": "DNAやRNAの塩基の並び順。遺伝情報を表している。",
+        "answer": "塩基配列"
+      },
+      {
+        "id": 7,
+        "question": "塩基対の形成において，特定の塩基どうしが結合する性質。DNAの場合，A（アデニン）とT（チミン），G（グアニン）とC（シトシン）が特異的に結合する。",
+        "answer": "［塩基の］相補性"
+      },
+      {
+        "id": 8,
+        "question": "DNAの2本のヌクレオチド鎖が，塩基の相補性に基づいて結合し，らせん状に巻いた構造。",
+        "answer": "二重らせん構造（二重らせん）"
+      },
+      {
+        "id": 9,
+        "question": "複製後のDNAの2本鎖が，元のDNAの鎖と新しくつくられた鎖で構成される複製の仕組み。",
+        "answer": "半保存的複製"
+      },
+      {
+        "id": 10,
+        "question": "1個の細胞（母細胞）が2個以上の細胞（娘細胞）に分かれる現象。",
+        "answer": "細胞分裂"
+      },
+      {
+        "id": 11,
+        "question": "多細胞生物で，生殖細胞以外の細胞が増殖するときにみられる細胞分裂。分裂の前後でDNA量は変化しない。",
+        "answer": "体細胞分裂"
+      },
+      {
+        "id": 12,
+        "question": "分裂を終えた細胞が次の分裂を完了するまでの周期。",
+        "answer": "細胞周期"
+      },
+      {
+        "id": 13,
+        "question": "細胞周期のうち，分裂期以外の期間。分裂のための準備が行われる。",
+        "answer": "間期"
+      },
+      {
+        "id": 14,
+        "question": "間期のうち，DNA複製のための準備の期間。",
+        "answer": "G1期（DNA合成準備期）"
+      },
+      {
+        "id": 15,
+        "question": "間期のうち，DNAが複製される期間。",
+        "answer": "S期（DNA合成期）"
+      },
+      {
+        "id": 16,
+        "question": "細胞周期のうち，核が二つに分かれ，それぞれの細胞にDNAが等しく分配される期間。",
+        "answer": "分裂期（M期）"
+      },
+      {
+        "id": 17,
+        "question": "DNAの塩基配列が写し取られてRNAができ，そのRNAの塩基配列をもとにタンパク質が合成されるという，遺伝情報の一方向の流れの原則。",
+        "answer": "セントラルドグマ（中心教義）"
+      },
+      {
+        "id": 18,
+        "question": "リボースという糖を持つヌクレオチドが多数結合したもの。",
+        "answer": "RNA（リボ核酸）"
+      },
+      {
+        "id": 19,
+        "question": "タンパク質が合成される際，DNAの塩基配列をもとに合成されるRNA。アミノ酸の配列に翻訳される。",
+        "answer": "mRNA（伝令RNA）"
+      },
+      {
+        "id": 20,
+        "question": "一つのアミノ酸を指定する，mRNAの塩基三つの並び。",
+        "answer": "コドン"
+      },
+      {
+        "id": 21,
+        "question": "mRNAの塩基配列に指定されたアミノ酸を運ぶRNA。",
+        "answer": "tRNA（転移RNA，運搬RNA）"
+      },
+      {
+        "id": 22,
+        "question": "DNAの塩基配列がRNAに写し取られること。",
+        "answer": "転写"
+      },
+      {
+        "id": 23,
+        "question": "mRNAの塩基配列がアミノ酸の配列に変換され，タンパク質が合成されること。",
+        "answer": "翻訳"
+      },
+      {
+        "id": 24,
+        "question": "DNAにはなく，RNAにはみられる塩基。",
+        "answer": "ウラシル"
+      },
+      {
+        "id": 25,
+        "question": "DNAの遺伝情報をもとにタンパク質が合成されること。",
+        "answer": "［遺伝子の］発現"
+      },
+      {
+        "id": 26,
+        "question": "アミノ酸が多数つながってできた有機物。酵素など特定の機能を持つ分子やからだの構成要素として働く。",
+        "answer": "タンパク質"
+      },
+      {
+        "id": 27,
+        "question": "生物が生命を維持するのに必要な最小限の遺伝情報。1個の生殖細胞（精子や卵）に含まれる遺伝情報に相当する。",
+        "answer": "ゲノム"
+      },
+      {
+        "id": 28,
+        "question": "両親それぞれから染色体を受け継ぐ生物において，1個の体細胞に存在する，大きさやかたちが同じである1対の染色体。",
+        "answer": "相同染色体"
+      },
+      {
+        "id": 29,
+        "question": "細胞が，特定のかたちや働きを持つようになること。",
+        "answer": "分化"
+      }
+    ]
+  },
+  {
+    "title": "神経系と内分泌系による調節",
+    "questions": [
+      {
+        "id": 1,
+        "question": "体外環境の対語。ヒトの場合，体液（血液・リンパ液・組織液）をさす。",
+        "answer": "体内環境"
+      },
+      {
+        "id": 2,
+        "question": "体外環境が変化しても，体内環境を一定に保とうとする性質。",
+        "answer": "恒常性（ホメオスタシス）"
+      },
+      {
+        "id": 3,
+        "question": "ヒトにおいて，細胞と細胞の間や循環系の管の中を満たす液体の総称。",
+        "answer": "体液"
+      },
+      {
+        "id": 4,
+        "question": "ヒトの体内を循環する体液の1種。有形成分（赤血球，白血球，血小板）と液体成分（血しょう）からなる。",
+        "answer": "血液"
+      },
+      {
+        "id": 5,
+        "question": "細胞と細胞の間のすき間に存在する体液。血しょうの一部が毛細血管からしみ出たもので，物質の受けわたしに働く。",
+        "answer": "組織液"
+      },
+      {
+        "id": 6,
+        "question": "リンパ管にあり，リンパ球を含んでいる体液。",
+        "answer": "リンパ液"
+      },
+      {
+        "id": 7,
+        "question": "神経系を構成し、情報を伝達する細胞。",
+        "answer": "神経細胞（ニューロン）"
+      },
+      {
+        "id": 8,
+        "question": "神経系のうち，脳と脊髄からなり，判断や命令を行うもの。",
+        "answer": "中枢神経系"
+      },
+      {
+        "id": 9,
+        "question": "神経系のうち，中枢神経系とからだの各部分をつないで情報を伝えるもの。",
+        "answer": "末梢神経系"
+      },
+      {
+        "id": 10,
+        "question": "脳のうち，生命を維持する上で重要な役割を担う，間脳，中脳，延髄などを合わせた部分。",
+        "answer": "脳幹"
+      },
+      {
+        "id": 11,
+        "question": "脳幹を含む脳全体の機能が不可逆的に失われた状態。",
+        "answer": "脳死"
+      },
+      {
+        "id": 12,
+        "question": "呼吸・脈拍・消化・分泌などは，無意識のうちに調節される。このような調節に働く神経系。",
+        "answer": "自律神経系"
+      },
+      {
+        "id": 13,
+        "question": "自律神経系のうち，緊張状態や活発に活動するときなどに働く神経。",
+        "answer": "交感神経"
+      },
+      {
+        "id": 14,
+        "question": "自律神経系のうち，安静時，疲労回復時などに働く神経。",
+        "answer": "副交感神経"
+      },
+      {
+        "id": 15,
+        "question": "心臓の拍動のリズムを決める働きをする部分。右心房にある。",
+        "answer": "ペースメーカー（洞房結節）"
+      },
+      {
+        "id": 16,
+        "question": "血液中に放出されて全身に運ばれ，特定の器官に受容されることによって，情報を伝達する物質。内分泌腺でつくられる。",
+        "answer": "ホルモン"
+      },
+      {
+        "id": 17,
+        "question": "ホルモンを分泌する器官や組織。ホルモンはここから血液中に直接分泌される。",
+        "answer": "内分泌腺"
+      },
+      {
+        "id": 18,
+        "question": "ホルモンなどを受容し，それにより活動が変化する器官。",
+        "answer": "標的器官"
+      },
+      {
+        "id": 19,
+        "question": "ホルモンなどを受容する構造体を持った細胞。",
+        "answer": "標的細胞"
+      },
+      {
+        "id": 20,
+        "question": "標的細胞に存在する，ホルモンが結合する構造体。",
+        "answer": "受容体"
+      },
+      {
+        "id": 21,
+        "question": "タンパク質合成，成長促進，血糖濃度の上昇に働くホルモン。",
+        "answer": "成長ホルモン"
+      },
+      {
+        "id": 22,
+        "question": "腎臓での水の再吸収を促進するなどの働きを持つホルモン。",
+        "answer": "バソプレシン"
+      },
+      {
+        "id": 23,
+        "question": "甲状腺から分泌される，代謝や成長，分化を促進するホルモン。",
+        "answer": "チロキシン"
+      },
+      {
+        "id": 24,
+        "question": "すい臓から分泌される，グリコーゲンの分解を促進し，血糖濃度を上昇させるホルモン。",
+        "answer": "グルカゴン"
+      },
+      {
+        "id": 25,
+        "question": "副腎髄質から分泌される，グリコーゲンの分解を促進し，血糖濃度を上昇させるホルモン。",
+        "answer": "アドレナリン"
+      },
+      {
+        "id": 26,
+        "question": "グリコーゲンの合成や，細胞でのグルコースの取り込み・分解を促進し，血糖濃度を低下させるホルモン。",
+        "answer": "インスリン"
+      },
+      {
+        "id": 27,
+        "question": "腎臓でのナトリウムイオンの再吸収とカリウムイオンの排出を促進するホルモン。",
+        "answer": "鉱質コルチコイド"
+      },
+      {
+        "id": 28,
+        "question": "間脳の底部にある，丸みをおびた内分泌器官。ヒトでは，前葉と後葉に分かれている。",
+        "answer": "脳下垂体（下垂体）"
+      },
+      {
+        "id": 29,
+        "question": "間脳の一部で，自律神経系や多くのホルモン分泌の中枢。",
+        "answer": "視床下部"
+      },
+      {
+        "id": 30,
+        "question": "ホルモンを分泌する神経細胞。",
+        "answer": "神経分泌細胞"
+      },
+      {
+        "id": 31,
+        "question": "ある生体反応において，最終産物が一連の反応の初期の反応に影響を与えること。酵素反応の制御や恒常性の維持などに重要な働きをしている。",
+        "answer": "フィードバック"
+      },
+      {
+        "id": 32,
+        "question": "血液中のグルコース。",
+        "answer": "血糖"
+      },
+      {
+        "id": 33,
+        "question": "多数のグルコースがつながった物質。肝臓や筋肉で合成・貯蔵され，血糖濃度が低下したときに分解される。",
+        "answer": "グリコーゲン"
+      },
+      {
+        "id": 34,
+        "question": "血糖濃度が上昇したままになり，様々な合併症を引き起こす病気。原因としては，インスリン分泌量の減少やインスリンが作用する標的細胞の受容体の異常などがある。",
+        "answer": "糖尿病"
+      },
+      {
+        "id": 35,
+        "question": "ヒトの血液において，核を持ち，細菌の排除などの免疫反応を担う血球の総称。好中球，リンパ球，マクロファージなどが含まれる。",
+        "answer": "白血球"
+      },
+      {
+        "id": 36,
+        "question": "ヒトの血液において，酸素を運ぶ働きを持つ血球。",
+        "answer": "赤血球"
+      },
+      {
+        "id": 37,
+        "question": "血小板などの働きによって，血液が固まること。血液の流出を防ぐ。",
+        "answer": "血液凝固"
+      },
+      {
+        "id": 38,
+        "question": "血液凝固のとき，赤血球や白血球をからめて血ぺいをつくる繊維状のタンパク質。",
+        "answer": "フィブリン"
+      },
+      {
+        "id": 39,
+        "question": "血液凝固が起こり，血管の傷の修復が終わった後，血流を正常に回復させるためにフィブリンを分解する仕組み。",
+        "answer": "線溶（フィブリン溶解）"
+      },
+      {
+        "id": 40,
+        "question": "新鮮な血液を体外に静置したときに上澄みとして得られる，少し黄色味がかった透明な液体。",
+        "answer": "血清"
+      }
+    ]
+  },
+  {
+    "title": "免疫",
+    "questions": [
+      {
+        "id": 1,
+        "question": "生体に害を与える様々な要因から，からだを守る仕組み。",
+        "answer": "生体防御"
+      },
+      {
+        "id": 2,
+        "question": "生体が自己の成分と異物を識別し，異物を排除する反応。",
+        "answer": "免疫"
+      },
+      {
+        "id": 3,
+        "question": "免疫のうち，異物を幅広く認識し，感染初期に働く反応。",
+        "answer": "自然免疫"
+      },
+      {
+        "id": 4,
+        "question": "免疫のうち，自然免疫の後に続いて起こる，特異的な反応。",
+        "answer": "適応免疫（獲得免疫）"
+      },
+      {
+        "id": 5,
+        "question": "自然免疫のうち，特定の細胞（食細胞）が細胞内に異物を取り込んで分解する作用。",
+        "answer": "食作用"
+      },
+      {
+        "id": 6,
+        "question": "自然免疫に関わる細胞が感染部位に集まって，毛細血管が拡張したり血流が多くなったりすることで，その部分が熱感とともに赤く腫れること。",
+        "answer": "炎症"
+      },
+      {
+        "id": 7,
+        "question": "樹枝状の突起を出している免疫細胞。抗原を取り込んで，T細胞に抗原情報を提示する。",
+        "answer": "樹状細胞"
+      },
+      {
+        "id": 8,
+        "question": "異物や感染細胞などを捕食し消化する，大形でアメーバ状の免疫細胞。異物が侵入した部位に集まると，発熱や血管の拡張を促進し，炎症を引き起こす。",
+        "answer": "マクロファージ"
+      },
+      {
+        "id": 9,
+        "question": "リンパ球の一種で，感染細胞やがん細胞を破壊する細胞。自然免疫に関係する。",
+        "answer": "ナチュラルキラー細胞（NK細胞）"
+      },
+      {
+        "id": 10,
+        "question": "骨髄の造血幹細胞に由来し，胸腺で分化する細胞。",
+        "answer": "T細胞"
+      },
+      {
+        "id": 11,
+        "question": "骨髄の造血幹細胞に由来し，骨髄で分化する細胞。体液性免疫に関係する。",
+        "answer": "B細胞"
+      },
+      {
+        "id": 12,
+        "question": "免疫が自己の成分には反応しない状態。",
+        "answer": "免疫寛容"
+      },
+      {
+        "id": 13,
+        "question": "体内に侵入した異物のうち，特にT細胞やB細胞によって認識されるもの。適応免疫（獲得免疫）を引き起こすきっかけとなる。",
+        "answer": "抗原"
+      },
+      {
+        "id": 14,
+        "question": "免疫反応において，抗原と特異的に結合するタンパク質。主成分は免疫グロブリンである。",
+        "answer": "抗体"
+      },
+      {
+        "id": 15,
+        "question": "抗原と抗体が特異的に結合して起こる反応。",
+        "answer": "抗原抗体反応"
+      },
+      {
+        "id": 16,
+        "question": "B細胞の抗体産生やマクロファージなどの食作用を助けるT細胞。",
+        "answer": "ヘルパーT細胞"
+      },
+      {
+        "id": 17,
+        "question": "適応免疫（獲得免疫）のうち，抗体を産生し，抗原抗体反応によって抗原の毒性を抑えて排除する免疫。B細胞が関与している。",
+        "answer": "体液性免疫"
+      },
+      {
+        "id": 18,
+        "question": "活性化したB細胞が分化してできる，抗体を産生する細胞。",
+        "answer": "形質細胞（抗体産生細胞）"
+      },
+      {
+        "id": 19,
+        "question": "適応免疫（獲得免疫）のうち，T細胞などが直接的に異物や感染細胞を攻撃する免疫。",
+        "answer": "細胞性免疫"
+      },
+      {
+        "id": 20,
+        "question": "標的となる細胞を直接攻撃するT細胞。",
+        "answer": "キラーT細胞"
+      },
+      {
+        "id": 21,
+        "question": "ある抗原の侵入が2回目以降のときにみられる，1回目の侵入時よりも早く強力な免疫反応。1回目の侵入後に保存された記憶細胞が働くことによって起こる。",
+        "answer": "二次応答"
+      },
+      {
+        "id": 22,
+        "question": "抗原が侵入した際に増殖したT細胞やB細胞の一部が，免疫反応後も体内に残ったもの。2回目以降の抗原の侵入の際には，これらの細胞が速やかに働く。",
+        "answer": "記憶細胞"
+      },
+      {
+        "id": 23,
+        "question": "組織を移植する際に，自己の組織は定着するが非自己の組織は定着せずに脱落する現象。",
+        "answer": "拒絶反応"
+      },
+      {
+        "id": 24,
+        "question": "感染症を予防する目的で，弱毒化した病原体やその成分を接種すること。",
+        "answer": "予防接種"
+      },
+      {
+        "id": 25,
+        "question": "予防接種の際に投与される，弱毒化した病原体やその成分。",
+        "answer": "ワクチン"
+      },
+      {
+        "id": 26,
+        "question": "抗体が含まれている血清を，患者に注射する治療法。ヘビ毒の治療などに有効である。",
+        "answer": "血清療法"
+      },
+      {
+        "id": 27,
+        "question": "免疫反応が過剰に働き，からだに不都合な症状を引き起こす現象。",
+        "answer": "アレルギー"
+      },
+      {
+        "id": 28,
+        "question": "アレルギーを引き起こす原因となる物質。",
+        "answer": "アレルゲン"
+      },
+      {
+        "id": 29,
+        "question": "アレルギーによって全身に起こる，急激で重篤な症状。",
+        "answer": "アナフィラキシーショック"
+      },
+      {
+        "id": 30,
+        "question": "自己の成分を誤って抗原として認識し，免疫反応を引き起こす病気。",
+        "answer": "自己免疫疾患"
+      },
+      {
+        "id": 31,
+        "question": "HIV（ヒト免疫不全ウイルス）によって引き起こされる病気。HIVはヘルパーT細胞を破壊するため，体液性免疫と細胞性免疫の両方の機能が低下する。",
+        "answer": "エイズ（AIDS，後天性免疫不全症候群）"
+      },
+      {
+        "id": 32,
+        "question": "免疫機能が低下し，健康なヒトなら感染しないような病原体に感染すること。",
+        "answer": "日和見感染"
+      }
+    ]
+  },
+  {
+    "title": "植生と遷移",
+    "questions": [
+      {
+        "id": 1,
+        "question": "複数の植物からなる集団。構成する植物の組成によって区別される。",
+        "answer": "植生"
+      },
+      {
+        "id": 2,
+        "question": "森林・草原・荒原などのような，植生の外観的特徴。",
+        "answer": "相観"
+      },
+      {
+        "id": 3,
+        "question": "ある植生内で，個体数が多く，最も大きな空間を占める植物。その植生の相観を決める。",
+        "answer": "優占種"
+      },
+      {
+        "id": 4,
+        "question": "発達した森林でみられる，高木層・亜高木層・低木層・草本層・地表層などからなる構造。高さに沿って，その場所の光の量に適応した植物が層状に生育することで形成される。",
+        "answer": "階層構造"
+      },
+      {
+        "id": 5,
+        "question": "高木層の葉や枝などに覆われた，森林の最頂部。",
+        "answer": "林冠"
+      },
+      {
+        "id": 6,
+        "question": "森林の地面に近い部分。",
+        "answer": "林床"
+      },
+      {
+        "id": 7,
+        "question": "風化などの物理的な作用や，腐植作用などの生物の働きによって形成される，栄養塩類や有機物に富む土。",
+        "answer": "土壌"
+      },
+      {
+        "id": 8,
+        "question": "落葉・落枝，動物の遺体などが分解されてできた有機物。",
+        "answer": "腐植（腐植質）"
+      },
+      {
+        "id": 9,
+        "question": "植生が時間の経過とともに移り変わっていくこと。",
+        "answer": "遷移（植生遷移）"
+      },
+      {
+        "id": 10,
+        "question": "土壌がない裸地から始まる遷移。",
+        "answer": "一次遷移"
+      },
+      {
+        "id": 11,
+        "question": "森林の伐採跡地や山火事跡など，すでに土壌が形成されたところから始まる遷移。",
+        "answer": "二次遷移"
+      },
+      {
+        "id": 12,
+        "question": "湖沼などの水中から始まる遷移。",
+        "answer": "湿性遷移"
+      },
+      {
+        "id": 13,
+        "question": "遷移の初期にみられる植物。",
+        "answer": "先駆種（先駆植物，パイオニア種，パイオニア植物）"
+      },
+      {
+        "id": 14,
+        "question": "遷移の結果到達する，最も安定な状態。",
+        "answer": "極相（クライマックス）"
+      },
+      {
+        "id": 15,
+        "question": "弱い光のもとでは生育できず，強い光のもとでよく生育する植物。",
+        "answer": "陽生植物"
+      },
+      {
+        "id": 16,
+        "question": "弱い光のもとでも生育できる植物。",
+        "answer": "陰生植物"
+      },
+      {
+        "id": 17,
+        "question": "光合成による二酸化炭素吸収量と，呼吸による二酸化炭素排出量とがつり合い，見かけ上，二酸化炭素の出入りがなくなる光の強さ。",
+        "answer": "光補償点"
+      },
+      {
+        "id": 18,
+        "question": "それ以上光が強くなっても，光合成速度が大きくならなくなるときの光の強さ。",
+        "answer": "光飽和点"
+      },
+      {
+        "id": 19,
+        "question": "自然災害や枯死などによって高木が倒れ，林冠に穴があき，林床に光が差し込むようになった空間。",
+        "answer": "ギャップ"
+      },
+      {
+        "id": 20,
+        "question": "ある地域の植生と，そこに生息する動物などの全ての生物のまとまり。植物の与える影響が大きいため，その植生の相観によって分類される。",
+        "answer": "バイオーム（生物群系）"
+      },
+      {
+        "id": 21,
+        "question": "雨季と乾季がある気候帯に発達し，乾季に落葉する樹林。",
+        "answer": "雨緑樹林"
+      },
+      {
+        "id": 22,
+        "question": "夏季は温暖，冬季は寒冷で，雨の多い地域に分布し，ブナやミズナラなど冬季に落葉する樹種からなる樹林。",
+        "answer": "夏緑樹林"
+      },
+      {
+        "id": 23,
+        "question": "暖温帯の雨の多い地域に分布し，シイ類やカシ類のような光沢のある葉を持つ常緑広葉樹からなる樹林。",
+        "answer": "照葉樹林"
+      },
+      {
+        "id": 24,
+        "question": "温帯のうち，雨が少ない地域に広がる草原。",
+        "answer": "ステップ"
+      },
+      {
+        "id": 25,
+        "question": "北極周辺の寒帯地域に広がる荒原。地衣類やコケ植物がみられる。",
+        "answer": "ツンドラ"
+      },
+      {
+        "id": 26,
+        "question": "緯度によって決まるバイオームの分布様式。",
+        "answer": "水平分布"
+      },
+      {
+        "id": 27,
+        "question": "標高によって決まるバイオームの分布様式。",
+        "answer": "垂直分布"
+      },
+      {
+        "id": 28,
+        "question": "日本の本州中部において，垂直分布の亜高山帯に分布する樹林。",
+        "answer": "針葉樹林"
+      },
+      {
+        "id": 29,
+        "question": "バイオームの垂直分布において，亜高山帯の上限。これより標高が高い地域には，森林は成立しない。",
+        "answer": "森林限界"
+      }
+    ]
+  },
+  {
+    "title": "生態系とその保全",
+    "questions": [
+      {
+        "id": 1,
+        "question": "光，温度，土壌，大気，水，栄養塩類など，その生物を取り巻く生物以外の環境。",
+        "answer": "非生物的環境"
+      },
+      {
+        "id": 2,
+        "question": "その生物を取り囲む，同じ種類の生物や異なる種類の生物からなる環境。",
+        "answer": "生物的環境"
+      },
+      {
+        "id": 3,
+        "question": "非生物的環境から生物が受ける影響。",
+        "answer": "作用"
+      },
+      {
+        "id": 4,
+        "question": "生物の生活によって非生物的環境が受ける影響。",
+        "answer": "環境形成作用"
+      },
+      {
+        "id": 5,
+        "question": "ある地域に生息する生物の集団と，それを取り巻く非生物的環境との一つのまとまり。",
+        "answer": "生態系"
+      },
+      {
+        "id": 6,
+        "question": "植物のように，無機物から有機物を合成する生物。栄養段階の一つで，最も下位に当たる。",
+        "answer": "生産者"
+      },
+      {
+        "id": 7,
+        "question": "植物などが合成した有機物を直接的または間接的に摂取して，栄養源にする生物。",
+        "answer": "消費者"
+      },
+      {
+        "id": 8,
+        "question": "消費者のうち，生物の遺体や排出物などに含まれる有機物を無機物にまで分解する過程に関わる生物。",
+        "answer": "分解者"
+      },
+      {
+        "id": 9,
+        "question": "ある生物に注目したときに，鎖のようにつながっていく直接的な捕食－被食の関係。",
+        "answer": "食物連鎖"
+      },
+      {
+        "id": 10,
+        "question": "安定した生態系でみられる，様々な生物の捕食－被食の関係が複雑にからみ合った関係。",
+        "answer": "食物網"
+      },
+      {
+        "id": 11,
+        "question": "生産者・一次消費者・二次消費者のような，生物が食物連鎖の中で占める各段階。",
+        "answer": "栄養段階"
+      },
+      {
+        "id": 12,
+        "question": "栄養段階の下位の者から上位の者へと，個体数や生物量（ある瞬間，一定の面積上に存在する生物体の総量）を重ねたもの。",
+        "answer": "生態ピラミッド"
+      },
+      {
+        "id": 13,
+        "question": "比較的その数は少ないにもかかわらず，生態系のバランスに大きな影響を与える生物種。",
+        "answer": "キーストーン種"
+      },
+      {
+        "id": 14,
+        "question": "ある生物種の個体数の変動が，その生物種とは直接的に捕食－被食の関係にない種に影響を及ぼすこと。",
+        "answer": "間接効果"
+      },
+      {
+        "id": 15,
+        "question": "多様な生物からなる生態系が，かく乱を受けても元に戻る力。",
+        "answer": "復元力（レジリエンス）"
+      },
+      {
+        "id": 16,
+        "question": "水中の微生物などが，河川や海に流入した有機物を分解する働き。",
+        "answer": "自然浄化（無機化）"
+      },
+      {
+        "id": 17,
+        "question": "海や湖に栄養塩類が流れ込んで，その濃度が高くなること。",
+        "answer": "富栄養化"
+      },
+      {
+        "id": 18,
+        "question": "海に大量の排水などが流入し，富栄養化が進行することによって引き起こされる現象。プランクトンが増殖し，水面が赤褐色になる。",
+        "answer": "赤潮"
+      },
+      {
+        "id": 19,
+        "question": "従来その地域に生息していなかったが，人間の活動によって持ち込まれ，定着した生物。",
+        "answer": "外来生物"
+      },
+      {
+        "id": 20,
+        "question": "ある生物種が地球上，もしくはある生態系からいなくなること。",
+        "answer": "絶滅"
+      },
+      {
+        "id": 21,
+        "question": "レッドリスト（レッドデータブック）に掲載されている，絶滅のおそれのある生物。",
+        "answer": "絶滅危惧種"
+      },
+      {
+        "id": 22,
+        "question": "雑木林や農地など，人里の近くにあり，適度に人間の手が加わった地域一帯。",
+        "answer": "里山"
+      },
+      {
+        "id": 23,
+        "question": "人間が生態系から受けている恩恵。",
+        "answer": "生態系サービス"
+      },
+      {
+        "id": 24,
+        "question": "大規模な開発を行う前に，その開発の環境への影響を予測・評価するために行う調査。",
+        "answer": "環境アセスメント（環境影響評価）"
+      }
+    ]
+  }
+]
