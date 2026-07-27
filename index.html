@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生物基礎 一問一答ラボ</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --blue: #3b82f6;
+            --blue-dark: #2563eb;
+            --accent: #f59e0b;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: #ffffff;
+            --text-main: #334155;
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background: #e2e8f0;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 520px;
+            width: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+            border: 4px solid #f1f5f9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #0f172a;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        /* ボタンデザイン */
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 6px 0;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+        }
+
+        .btn-primary { 
+            background-color: var(--primary); 
+            color: white; 
+            box-shadow: 0 4px 0 var(--primary-dark);
+        }
+        .btn-primary:hover { background-color: #34d399; }
+
+        .btn-blue { 
+            background-color: var(--blue); 
+            color: white; 
+            width: 100%;
+            box-shadow: 0 4px 0 var(--blue-dark);
+        }
+        .btn-blue:hover { background-color: #60a5fa; }
+
+        .btn-logout { 
+            background-color: #ef4444; 
+            color: white; 
+            font-size: 0.85rem; 
+            padding: 8px 16px; 
+            border-radius: 12px;
+            box-shadow: 0 3px 0 #dc2626;
+        }
+
+        /* 選択肢ボタン */
+        .option-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-family: inherit;
+            font-weight: 700;
+            color: var(--text-main);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-sizing: border-box;
+        }
+        .option-btn:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateX(4px);
+        }
+
+        /* キーボードバッジ (1,2,3,4) */
+        .key-badge {
+            background-color: #e2e8f0;
+            color: #475569;
+            border-radius: 8px;
+            padding: 2px 8px;
+            font-size: 0.85rem;
+            margin-right: 12px;
+            font-weight: 800;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 0 #cbd5e1;
+            flex-shrink: 0;
+        }
+
+        /* クイズエリアヘッダー */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        #question-number { 
+            font-size: 0.9rem; 
+            font-weight: 800;
+            color: var(--primary); 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 連続正解バッジ */
+        #streak-counter {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #d97706;
+            background-color: #fef3c7;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #fde68a;
+            display: none;
+            animation: popIn 0.2s ease;
+        }
+
+        #question-text { 
+            font-size: 1.15rem; 
+            font-weight: 700; 
+            color: #1e293b;
+            margin-bottom: 22px; 
+            text-align: left; 
+            line-height: 1.5; 
+        }
+
+        /* 解説エリア */
+        #result-area { 
+            margin-top: 15px; 
+            padding: 16px; 
+            border-radius: 16px; 
+            display: none; 
+            text-align: left; 
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .result-correct { background-color: #ecfdf5; border: 2px solid #a7f3d0; color: #065f46; }
+        .result-wrong { background-color: #fef2f2; border: 2px solid #fecaca; color: #991b1b; }
+
+        /* フォーム入力欄 */
+        .form-group { margin-bottom: 14px; text-align: left; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: #475569; }
+        .form-group input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            font-size: 1rem; 
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus { border-color: var(--blue); }
+
+        button:disabled {
+            background-color: #94a3b8 !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+            opacity: 0.7;
+            transform: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>🧬 生物基礎 一問一答 🔬</h1>
+
+    <!-- 1. 認証エリア -->
+    <div id="auth-section">
+        <p id="user-status" style="color: #64748b; font-weight: 700;">読み込み中...</p>
+        <button id="login-btn" class="btn btn-primary" style="display: none;">Googleでログイン</button>
+        <button id="logout-btn" class="btn btn-logout" style="display: none;">ログアウト</button>
+    </div>
+
+    <!-- 2. タイトル（スタート）画面 -->
+    <div id="start-screen" style="display: none; margin-top: 20px;">
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px dashed #cbd5e1;">
+            <p style="font-size: 1rem; color: #475569; line-height: 1.7; margin: 0; font-weight: 700;">
+                全34問のクイズに挑戦！<br>
+                💡 <span style="color: var(--primary-dark);">[1]〜[4] キー</span> で解答<br>
+                💡 <span style="color: var(--blue-dark);">[Enter] キー</span> で次へ進む
+            </p>
+        </div>
+        <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; margin-top: 25px;">
+            スタート
+        </button>
+    </div>
+
+    <!-- 3. クイズ画面 -->
+    <div id="quiz-screen" style="display: none; margin-top: 20px;">
+        <div class="quiz-header">
+            <div id="question-number">QUESTION 01</div>
+            <div id="streak-counter">🔥 0問連続正解中！</div>
+        </div>
+        <div id="question-text">読み込み中...</div>
+        <div id="options-container"></div>
+        
+        <div id="result-area">
+            <div id="result-judge" style="font-weight: 800; font-size: 1.1rem;"></div>
+            <div id="result-explanation" style="margin-top: 6px; font-size: 0.95rem; line-height: 1.5;"></div>
+        </div>
+
+        <button id="next-btn" class="btn btn-blue" style="display: none; margin-top: 18px;">次の問題へ ➔</button>
+    </div>
+
+    <!-- 4. 結果・スコア送信画面 -->
+    <div id="result-screen" style="display: none; margin-top: 20px;">
+        <h2 style="margin-top: 0; color: #0f172a; font-weight: 800;">🎉 解答終了！</h2>
+        <p id="final-score" style="font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 15px 0;"></p>
+
+        <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0;">
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">データの提出</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; font-weight: 700;">必要事項を入力して送信してください。</p>
+            
+            <div class="form-group">
+                <label for="input-grade">学年</label>
+                <input type="number" id="input-grade" placeholder="例: 1">
+            </div>
+            <div class="form-group">
+                <label for="input-class">組</label>
+                <input type="number" id="input-class" placeholder="例: 2">
+            </div>
+            <div class="form-group">
+                <label for="input-number">出席番号</label>
+                <input type="number" id="input-number" placeholder="例: 15">
+            </div>
+            <div class="form-group">
+                <label for="input-name">氏名</label>
+                <input type="text" id="input-name" placeholder="例: 山田 太郎">
+            </div>
+
+            <button id="submit-score-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="sendScore()">
+                スコアを送信する
+            </button>
+            <p id="send-status" style="margin-top: 12px; font-weight: 700; font-size: 0.9rem;"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Firebase 設定情報
+    const firebaseConfig = {
+        apiKey: "AIzaSyBDjHDXa7fnOB39WI2D7eC7G_efPKZW6mk",
+        authDomain: "bio-quest-5aa22.firebaseapp.com",
+        projectId: "bio-quest-5aa22",
+        storageBucket: "bio-quest-5aa22.firebasestorage.app",
+        messagingSenderId: "114808918613",
+        appId: "1:114808918613:web:ad4689c75545faf60dbadc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const authSection = document.getElementById("auth-section");
+    const userStatus = document.getElementById("user-status");
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const startScreen = document.getElementById("start-screen");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
+    const streakCounter = document.getElementById("streak-counter");
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let streak = 0; // 連続正解数の保持
+    let isAnswered = false;
+    let isSubmitted = false;
+
+    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
+
+    // --- Firebase 認証監視 ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            userStatus.innerText = `👋 ようこそ、${user.displayName} さん！`;
+            loginBtn.style.display = "none";
+            logoutBtn.style.display = "inline-block";
+            authSection.style.display = "block";
+            startScreen.style.display = "block";
+            loadQuestions();
+        } else {
+            userStatus.innerText = "🔒 ログインが必要です。";
+            loginBtn.style.display = "inline-block";
+            logoutBtn.style.display = "none";
+            authSection.style.display = "block";
+            startScreen.style.display = "none";
+            quizScreen.style.display = "none";
+            resultScreen.style.display = "none";
+        }
+    });
+
+    loginBtn.addEventListener("click", () => {
+        signInWithPopup(auth, provider).catch(error => alert("ログインエラー: " + error.message));
+    });
+
+    logoutBtn.addEventListener("click", () => signOut(auth));
+
+    // スタートボタンを押した時の処理
+    document.getElementById("start-btn").addEventListener("click", () => {
+        authSection.style.display = "none"; // ログイン表示を非表示に
+        startScreen.style.display = "none";
+        quizScreen.style.display = "block";
+        currentQuestionIndex = 0;
+        score = 0;
+        streak = 0;
+        isSubmitted = false;
+        showQuestion();
+    });
+
+    // --- クイズロジック ---
+    async function loadQuestions() {
+        try {
+            const response = await fetch('./questions.json');
+            questions = await response.json();
+        } catch (error) {
+            console.error("問題の読み込みエラー:", error);
+        }
+    }
+
+    function showQuestion() {
+        isAnswered = false;
+        const q = questions[currentQuestionIndex];
+        document.getElementById("question-number").innerText = `QUESTION ${String(currentQuestionIndex + 1).padStart(2, '0')} / ${questions.length}`;
+        document.getElementById("question-text").innerText = q.question;
+        
+        // 連続正解バッジの更新
+        if (streak >= 2) {
+            streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
+            streakCounter.style.display = "inline-block";
+        } else {
+            streakCounter.style.display = "none";
+        }
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+        document.getElementById("result-area").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+
+        // 選択肢シャッフル
+        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+
+        shuffledOptions.forEach((option, index) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerHTML = `<span class="key-badge">${index + 1}</span> <span>${option}</span>`;
+            btn.onclick = () => checkAnswer(option, q.answer, q.explanation);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct, explanation) {
+        if (isAnswered) return;
+        isAnswered = true;
+
+        const buttons = document.querySelectorAll(".option-btn");
+        buttons.forEach(btn => btn.disabled = true);
+
+        const resultArea = document.getElementById("result-area");
+        const resultJudge = document.getElementById("result-judge");
+        const resultExplanation = document.getElementById("result-explanation");
+
+        if (selected === correct) {
+            score++;
+            streak++; // 連続正解をカウントアップ
+            resultArea.className = "result-correct";
+            resultJudge.innerText = "⭕ 正解！ Excellent!";
+        } else {
+            streak = 0; // 不正解ならリセット
+            resultArea.className = "result-wrong";
+            resultJudge.innerText = `❌ 不正解... （正解: ${correct}）`;
+        }
+
+        // 回答後の連続正解バッジ更新
+        if (streak >= 2) {
+            streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
+            streakCounter.style.display = "inline-block";
+        } else {
+            streakCounter.style.display = "none";
+        }
+
+        resultExplanation.innerText = explanation;
+        resultArea.style.display = "block";
+
+        const nextBtn = document.getElementById("next-btn");
+        if (currentQuestionIndex < questions.length - 1) {
+            nextBtn.innerText = "次の問題へ ➔ (Enter)";
+            nextBtn.onclick = handleNextAction;
+        } else {
+            nextBtn.innerText = "結果を見る ➔ (Enter)";
+            nextBtn.onclick = showResultScreen;
+        }
+        nextBtn.style.display = "block";
+    }
+
+    function handleNextAction() {
+        if (!isAnswered) return;
+        currentQuestionIndex++;
+        showQuestion();
+    }
+
+    function showResultScreen() {
+        quizScreen.style.display = "none";
+        const scorePercent = Math.round((score / questions.length) * 100);
+        document.getElementById("final-score").innerText = `スコア: ${score} / ${questions.length} 問 (${scorePercent}%)`;
+        resultScreen.style.display = "block";
+    }
+
+    // --- キーボード操作対応 ---
+    document.addEventListener("keydown", (e) => {
+        if (quizScreen.style.display === "block") {
+            if (!isAnswered && ["1", "2", "3", "4"].includes(e.key)) {
+                const index = parseInt(e.key) - 1;
+                const buttons = document.querySelectorAll(".option-btn");
+                if (buttons[index]) {
+                    buttons[index].click();
+                }
+            }
+            else if (isAnswered && e.key === "Enter") {
+                const nextBtn = document.getElementById("next-btn");
+                if (nextBtn && nextBtn.style.display !== "none") {
+                    nextBtn.click();
+                }
+            }
+        }
+        else if (resultScreen.style.display === "block" && e.key === "Enter") {
+            if (!isSubmitted) {
+                sendScore();
+            }
+        }
+    });
+
+    // --- 成績送信 ---
+    window.sendScore = function() {
+        if (isSubmitted) return;
+
+        const grade = document.getElementById("input-grade").value;
+        const classNum = document.getElementById("input-class").value;
+        const number = document.getElementById("input-number").value;
+        const name = document.getElementById("input-name").value;
+        const statusText = document.getElementById("send-status");
+        const submitBtn = document.getElementById("submit-score-btn");
+
+        if (!grade || !classNum || !number || !name) {
+            alert("学年、組、出席番号、氏名をすべて入力してください。");
+            return;
+        }
+
+        statusText.style.color = "#3b82f6";
+        statusText.innerText = "送信中...";
+        submitBtn.disabled = true;
+
+        const scorePercentValue = Math.round((score / questions.length) * 100);
+
+        const formData = new FormData();
+        formData.append("entry.99129247", grade);
+        formData.append("entry.1271020973", classNum);
+        formData.append("entry.1313275559", number);
+        formData.append("entry.1655607218", name);
+        formData.append("entry.147621973", `${score} / ${questions.length}問`);
+        formData.append("entry.1382560193", scorePercentValue);
+
+        fetch(GOOGLE_FORM_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: formData
+        }).then(() => {
+            isSubmitted = true;
+            statusText.style.color = "#10b981";
+            statusText.innerText = "送信が完了しました！お疲れ様でした。";
+            submitBtn.innerText = "送信完了";
+            submitBtn.disabled = true;
+        }).catch(error => {
+            console.error("送信エラー:", error);
+            statusText.style.color = "#ef4444";
+            statusText.innerText = "送信に失敗しました。もう一度試してください。";
+            submitBtn.disabled = false;
+        });
+    };
+</script>
+
+</body>
+</html>
