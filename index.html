@@ -288,6 +288,31 @@
                     <option value="all">全問挑戦</option>
                 </select>
             </div>
+            <!-- スタート画面（#start-screen）の中にボタンを追加 -->
+<div id="start-screen" style="display: none; margin-top: 20px;">
+    <!-- 達成度確認ボタン -->
+    <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 16px;">
+        🏆 達成度を確認する
+    </button>
+
+    <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
+        <!-- (既存の単元選択・問題数選択フォーム) -->
+    </div>
+    ...
+</div>
+
+<!-- 達成度表示ポップアップ（クイズコンテナの閉じタグの直前に配置） -->
+<div id="stats-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 440px; text-align: left;">
+        <h2 style="text-align: center; margin-bottom: 15px;">🏆 単元別 達成度</h2>
+        <div id="stats-list-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+            <!-- ここにJavaScriptで単元ごとの結果が動的に挿入されます -->
+        </div>
+        <button id="close-stats-btn" class="btn btn-primary" style="width: 100%;">
+            閉じる
+        </button>
+    </div>
+</div>
         </div>
 
         <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; width: 100%;">
@@ -359,6 +384,15 @@
 <!-- Firebase SDK -->
 <!-- Firebase SDK & クイズ処理 -->
 <script type="module">
+    /* <script type="module"> の冒頭部分 */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// ★ Firestore の機能を追加インポート
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app); // ★ Firestoreの初期化
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -592,13 +626,18 @@
         showQuestion();
     }
 
-    function showResultScreen() {
-        quizScreen.style.display = "none";
-        const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
-        document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
-        resultScreen.style.display = "block";
-    }
+function showResultScreen() {
+    quizScreen.style.display = "none";
+    const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
+    document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
+    resultScreen.style.display = "block";
 
+    // ★ 現在選択中の単元名を取得して最高記録を保存
+    const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
+    if (selectUnit.value !== "all") {
+        saveUnitScore(selectedUnitText, scorePercent);
+    }
+}
     // キーボード操作対応 (1~4キーで回答, Enterで次へ)
     document.addEventListener("keydown", (e) => {
         if (quizScreen.style.display === "block") {
@@ -676,6 +715,104 @@ window.sendScore = function() {
             statusText.innerText = "送信に失敗しました。もう一度試してください。";
             submitBtn.disabled = false;
         });
+    /* JSの変数宣言エリアに追加 */
+const statsModal = document.getElementById("stats-modal");
+const viewStatsBtn = document.getElementById("view-stats-btn");
+const closeStatsBtn = document.getElementById("close-stats-btn");
+const statsListContainer = document.getElementById("stats-list-container");
+
+// モーダル開閉のイベントリスナー
+viewStatsBtn.addEventListener("click", () => showStatsModal());
+closeStatsBtn.addEventListener("click", () => { statsModal.style.display = "none"; });
+
+// --- 1. 最高成績を保存する関数 ---
+async function saveUnitScore(unitTitle, scorePercent) {
+    const user = auth.currentUser;
+    if (!user) return; // 未ログイン時は保存スキップ
+
+    // ドキュメントIDとして使えるように記号等を置換
+    const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
+    const userStatsRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
+
+    try {
+        const docSnap = await getDoc(userStatsRef);
+        let previousHigh = 0;
+
+        if (docSnap.exists()) {
+            previousHigh = docSnap.data().scorePercent || 0;
+        }
+
+        // 過去の最高スコアを超えた場合のみ更新
+        if (scorePercent > previousHigh) {
+            await setDoc(userStatsRef, {
+                unitTitle: unitTitle,
+                scorePercent: scorePercent,
+                updatedAt: new Date()
+            });
+        }
+    } catch (e) {
+        console.error("成績保存エラー:", e);
+    }
+}
+
+// --- 2. 達成度一覧を取得・表示する関数 ---
+async function showStatsModal() {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("達成度を確認するにはログインが必要です。");
+        return;
+    }
+
+    statsListContainer.innerHTML = "<p style='text-align:center;'>読み込み中...</p>";
+    statsModal.style.display = "flex";
+
+    try {
+        let htmlBuffer = "";
+
+        // rawUnitsData（questions.jsonから読み込んだ全単元データ）をループ処理
+        for (let i = 0; i < rawUnitsData.length; i++) {
+            const unitTitle = rawUnitsData[i].title || `単元 ${i + 1}`;
+            const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
+            
+            // Firestoreから該当単元の最高成績データを取得
+            const docRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
+            const docSnap = await getDoc(docRef);
+
+            let icon = "➖"; // 未挑戦
+            let statusText = "未挑戦";
+
+            if (docSnap.exists()) {
+                const score = docSnap.data().scorePercent || 0;
+                
+                // 判定ロジック
+                if (score === 100) {
+                    icon = "💮";
+                    statusText = "100% (クリア!)";
+                } else if (score >= 80) {
+                    icon = "⭕️";
+                    statusText = `${score}%`;
+                } else {
+                    icon = "💬";
+                    statusText = `${score}%`;
+                }
+            }
+
+            // 単元ごとのリスト行を表示
+            htmlBuffer += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                    <div style="font-weight: 700; font-size: 0.95rem; color: #334155; flex: 1;">${unitTitle}</div>
+                    <div style="font-size: 1.2rem; margin: 0 10px;">${icon}</div>
+                    <div style="font-weight: 800; font-size: 0.9rem; color: #475569; width: 90px; text-align: right;">${statusText}</div>
+                </div>
+            `;
+        }
+
+        statsListContainer.innerHTML = htmlBuffer;
+    } catch (e) {
+        console.error("達成度取得エラー:", e);
+        statsListContainer.innerHTML = "<p style='color:red; text-align:center;'>データの読み込みに失敗しました。</p>";
+    }
+}
     // --- 変数宣言エリアに以下を追加 ---
     const completionModal = document.getElementById("completion-modal");
     const backToTitleBtn = document.getElementById("back-to-title-btn");
