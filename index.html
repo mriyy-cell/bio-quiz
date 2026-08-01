@@ -420,6 +420,7 @@
     let streak = 0;
     let isAnswered = false;
     let isSubmitted = false;
+    let currentSelectedCount = "10"
 
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
 
@@ -474,7 +475,10 @@
     }
 
     document.getElementById("start-btn").addEventListener("click", () => {
+currentSelectedCount = selectCount.value;
         prepareQuizPool();
+
+        // （以下略）
         if (currentActiveQuestions.length === 0) {
             alert("問題が見つかりませんでした。");
             return;
@@ -604,7 +608,6 @@
         currentQuestionIndex++;
         showQuestion();
     }
-
     function showResultScreen() {
         quizScreen.style.display = "none";
         const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
@@ -613,7 +616,8 @@
 
         const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
         if (selectUnit.value !== "all") {
-            saveUnitScore(selectedUnitText, scorePercent);
+            // 👇 第3引数に currentSelectedCount を渡すように変更
+            saveUnitScore(selectedUnitText, scorePercent, currentSelectedCount);
         }
     }
 
@@ -716,8 +720,8 @@
             submitScoreBtn.disabled = false;
         });
     }
-
-    async function saveUnitScore(unitTitle, scorePercent) {
+    
+    async function saveUnitScore(unitTitle, scorePercent, questionCount) {
         const user = auth.currentUser;
         if (!user) return;
 
@@ -732,12 +736,14 @@
                 previousHigh = docSnap.data().scorePercent || 0;
             }
 
-            if (scorePercent > previousHigh) {
+            // 最高得点が更新されたか、同点でも20問パーフェクトを新しく達成した場合に更新
+            if (scorePercent > previousHigh || (scorePercent === 100 && questionCount === "20")) {
                 await setDoc(userStatsRef, {
                     unitTitle: unitTitle,
                     scorePercent: scorePercent,
+                    questionCount: questionCount, // 👈 出題数もFirestoreに保存！
                     updatedAt: new Date()
-                });
+                }, { merge: true });
             }
         } catch (e) {
             console.error("成績保存エラー:", e);
@@ -766,22 +772,27 @@
 
                 let icon = "➖";
                 let statusText = "未挑戦";
-
-                if (docSnap.exists()) {
-                    const score = docSnap.data().scorePercent || 0;
-                    
-                    if (score === 100) {
-                        icon = "💮";
-                        statusText = "100% (クリア!)";
-                    } else if (score >= 80) {
-                        icon = "⭕️";
-                        statusText = `${score}%`;
-                    } else {
-                        icon = "💬";
-                        statusText = `${score}%`;
-                    }
-                }
-
+                
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        const score = data.scorePercent || 0;
+        const qCount = data.questionCount || "";
+        
+        // 🌟 20問 且つ 100% の特別判定！
+        if (score === 100 && qCount === "20") {
+            icon = "👑";
+            statusText = "👑 20問全勝!";
+        } else if (score === 100) {
+            icon = "💮";
+            statusText = "100% (クリア!)";
+        } else if (score >= 80) {
+            icon = "⭕️";
+            statusText = `${score}%`;
+        } else {
+            icon = "💬";
+            statusText = `${score}%`;
+        }
+    }
                 htmlBuffer += `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #e2e8f0;">
                         <div style="font-weight: 700; font-size: 0.95rem; color: #334155; flex: 1;">${unitTitle}</div>
