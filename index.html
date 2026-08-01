@@ -384,17 +384,11 @@
 <!-- Firebase SDK -->
 <!-- Firebase SDK & クイズ処理 -->
 <script type="module">
-    /* <script type="module"> の冒頭部分 */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-// ★ Firestore の機能を追加インポート
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app); // ★ Firestoreの初期化
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    // ★ 1. ここに Firestore の機能を追記します
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBDjHDXa7fnOB39WI2D7eC7G_efPKZW6mk",
@@ -407,6 +401,7 @@ const db = getFirestore(app); // ★ Firestoreの初期化
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app); // ★ 2. ここに db の定義を追加します
     const provider = new GoogleAuthProvider();
 
     const authSection = document.getElementById("auth-section");
