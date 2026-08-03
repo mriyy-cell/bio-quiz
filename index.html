@@ -255,6 +255,65 @@
             font-size: 0.95rem;
             margin-bottom: 20px;
         }
+        /* --- 👑 豪華さレベルに応じたCSS演出 --- */
+
+/* レベル1〜: バッジアニメーション */
+.badge-master {
+    background: linear-gradient(135deg, #ffd700, #ffa500);
+    color: #000 !important;
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4);
+    animation: pulse 2s infinite;
+}
+
+/* レベル2〜: 背景のキラキラ流れる輝き */
+.shiny-bg {
+    background: linear-gradient(-45deg, #ffffff, #fffdf0, #fff7d1, #ffffff) !important;
+    background-size: 400% 400% !important;
+    animation: gradientBG 8s ease infinite !important;
+}
+
+/* レベル3〜: 黄金のカードフレーム */
+.gold-card-frame {
+    border: 4px solid #ffd700 !important;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* レベル4〜: スタートボタンの黄金化 */
+.gold-button {
+    background: linear-gradient(45deg, #ffe066, #f59e0b) !important;
+    color: #1e293b !important;
+    border: none !important;
+    font-weight: bold !important;
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* レベル5〜: 虹色タイトルの文字アニメーション */
+.rainbow-title {
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf7, #ff00c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbowText 6s linear infinite;
+    background-size: 300% 300%;
+}
+
+/* アニメーションキーフレーム群 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes rainbowText {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
     </style>
 </head>
 <body>
@@ -271,6 +330,12 @@
 
     <!-- 2. タイトル（スタート・設定）画面 -->
     <div id="start-screen" style="display: none; margin-top: 20px;">
+    <!-- 🌟 追加: 豪華さレベルに合わせて表示されるバッジエリア -->
+    <div id="master-badge-container" style="display: none; margin-bottom: 12px;">
+        <span id="master-rank-badge" class="badge rounded-pill px-3 py-2 fs-6"></span>
+    </div>
+
+    <h1 id="main-title" class="display-5 fw-bold mb-3">クイズアプリ</h1>
         <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 16px;">
             🏆 達成度を確認する
         </button>
@@ -430,7 +495,7 @@
 
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
 
-    onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
         if (user) {
             userStatus.innerText = `ようこそ、${user.displayName} さん！`;
             loginBtn.style.display = "none";
@@ -438,6 +503,8 @@
             authSection.style.display = "block";
             startScreen.style.display = "block";
             loadQuestions();
+            
+            updateTitleDecoration();
         } else {
             userStatus.innerText = "🔒 ログインが必要です。";
             loginBtn.style.display = "inline-block";
@@ -448,7 +515,6 @@
             resultScreen.style.display = "none";
         }
     });
-
     loginBtn.addEventListener("click", () => {
         signInWithPopup(auth, provider).catch(error => alert("ログインエラー: " + error.message));
     });
@@ -638,6 +704,8 @@ function showResultScreen() {
             quizScreen.style.display = "none";
             authSection.style.display = "block";
             startScreen.style.display = "block";
+            
+            updateTitleDecoration();
         }
     });
 
@@ -646,6 +714,8 @@ function showResultScreen() {
         resultScreen.style.display = "none";
         authSection.style.display = "block";
         startScreen.style.display = "block";
+
+        updateTitleDecoration();
         
         document.getElementById("input-grade").value = "";
         document.getElementById("input-class").value = "";
@@ -823,6 +893,71 @@ async function saveUnitScore(unitTitle, scorePercent, questionCount) {
             statsListContainer.innerHTML = "<p style='color:red; text-align:center;'>データの読み込みに失敗しました。</p>";
         }
     }
+    // 🌟 完全マスター数に応じてタイトル画面を段階的に豪華にする処理
+async function updateTitleDecoration() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+        const userStatsRef = collection(db, "users", user.uid, "unitScores");
+        const querySnapshot = await getDocs(userStatsRef);
+        
+        let masterCount = 0;
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            // 100% かつ 全問挑戦(all_questions) の数をカウント
+            if (data.scorePercent === 100 && data.questionCount === "all_questions") {
+                masterCount++;
+            }
+        });
+
+        // 画面要素を取得
+        const quizContainer = document.querySelector(".quiz-container");
+        const startBtn = document.getElementById("start-btn");
+        const mainTitle = document.getElementById("main-title");
+        const badgeContainer = document.getElementById("master-badge-container");
+        const rankBadge = document.getElementById("master-rank-badge");
+
+        // --- 段階ごとの豪華さ切り替え ---
+
+        // レベル0: リセット（何も獲得していない状態）
+        quizContainer.classList.remove("shiny-bg", "gold-card-frame");
+        startBtn.classList.remove("gold-button");
+        mainTitle.classList.remove("rainbow-title");
+        badgeContainer.style.display = "none";
+
+        // レベル1: バッジ表示
+        if (masterCount >= 1) {
+            badgeContainer.style.display = "block";
+            rankBadge.className = "badge badge-master px-3 py-2 fs-6";
+            rankBadge.innerText = `👑 完全マスター: ${masterCount} 単元達成!`;
+        }
+
+        // レベル2: 背景がキラキラ流れる
+        if (masterCount >= 2) {
+            quizContainer.classList.add("shiny-bg");
+        }
+
+        // レベル3: カードの枠線がゴールドに変化
+        if (masterCount >= 3) {
+            quizContainer.classList.add("gold-card-frame");
+        }
+
+        // レベル4: スタートボタンが黄金化
+        if (masterCount >= 4) {
+            startBtn.classList.add("gold-button");
+        }
+
+        // レベル5以上: タイトルが虹色に光り、LEGEND称号が追加
+        if (masterCount >= 5) {
+            mainTitle.classList.add("rainbow-title");
+            rankBadge.innerText = `🌈 伝説のマスター (👑×${masterCount})`;
+        }
+
+    } catch (e) {
+        console.error("タイトル豪華度更新エラー:", e);
+    }
+}
 </script>
 </body>
 </html>
