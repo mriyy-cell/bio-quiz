@@ -289,7 +289,7 @@
                     <option value="10">10問</option>
                     <option value="15">15問</option>
                     <option value="20">20問</option>
-                    <option value="all">全問挑戦</option>
+                    <option value="all_questions">全問挑戦</option>
                 </select>
             </div>
         </div>
@@ -614,7 +614,7 @@ currentSelectedCount = selectCount.value;
         currentQuestionIndex++;
         showQuestion();
     }
-    function showResultScreen() {
+function showResultScreen() {
         quizScreen.style.display = "none";
         const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
         document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
@@ -622,7 +622,7 @@ currentSelectedCount = selectCount.value;
 
         const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
         if (selectUnit.value !== "all") {
-            // 👇 第3引数に currentSelectedCount を渡すように変更
+            // 👇 currentSelectedCount（"10", "15", "20", "all_questions" のいずれか）を渡す
             saveUnitScore(selectedUnitText, scorePercent, currentSelectedCount);
         }
     }
@@ -736,7 +736,7 @@ currentSelectedCount = selectCount.value;
         });
     }
     
-    async function saveUnitScore(unitTitle, scorePercent, questionCount) {
+async function saveUnitScore(unitTitle, scorePercent, questionCount) {
         const user = auth.currentUser;
         if (!user) return;
 
@@ -751,12 +751,12 @@ currentSelectedCount = selectCount.value;
                 previousHigh = docSnap.data().scorePercent || 0;
             }
 
-            // 最高得点が更新されたか、同点でも20問パーフェクトを新しく達成した場合に更新
-            if (scorePercent > previousHigh || (scorePercent === 100 && questionCount === "20")) {
+            // 🌟 変更箇所：100% かつ 「全問挑戦(all_questions)」でクリアした場合も更新対象にする
+            if (scorePercent > previousHigh || (scorePercent === 100 && questionCount === "all_questions")) {
                 await setDoc(userStatsRef, {
                     unitTitle: unitTitle,
                     scorePercent: scorePercent,
-                    questionCount: questionCount, // 👈 出題数もFirestoreに保存！
+                    questionCount: questionCount, // "all_questions" などが保存される
                     updatedAt: new Date()
                 }, { merge: true });
             }
@@ -794,7 +794,7 @@ currentSelectedCount = selectCount.value;
         const qCount = data.questionCount || "";
         
         // 🌟 20問 且つ 100% の特別判定！
-        if (score === 100 && qCount === "20") {
+        if (score === 100 && qCount === "all_questions") {
             icon = "👑";
             statusText = "👑 完全マスター!";
         } else if (score === 100) {
