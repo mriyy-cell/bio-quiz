@@ -299,7 +299,7 @@
         </button>
     </div>
 
-    <!-- 3. クイズ画面 -->
+<!-- 3. クイズ画面 -->
     <div id="quiz-screen" style="display: none; margin-top: 20px;">
         <div class="quiz-header">
             <div id="question-number">QUESTION 01</div>
@@ -314,6 +314,11 @@
         </div>
 
         <button id="next-btn" class="btn btn-blue" style="display: none; margin-top: 18px;">次の問題へ ➔</button>
+
+        <button id="quit-to-title-btn" class="btn" style="background-color: #94a3b8; color: white; width: 100%; margin-top: 12px; font-size: 0.9rem;">
+            🏠 タイトルに戻る
+        </button>
+ 
     </div>
 
     <!-- 4. 結果・成績送信画面 -->
@@ -412,6 +417,7 @@
     const completionModal = document.getElementById("completion-modal");
     const backToTitleBtn = document.getElementById("back-to-title-btn");
     const submitScoreBtn = document.getElementById("submit-score-btn");
+    const quitToTitleBtn = document.getElementById("quit-to-title-btn");
 
     let rawUnitsData = [];
     let currentActiveQuestions = [];
@@ -625,6 +631,15 @@ currentSelectedCount = selectCount.value;
     viewStatsBtn.addEventListener("click", () => showStatsModal());
     closeStatsBtn.addEventListener("click", () => { statsModal.style.display = "none"; });
     submitScoreBtn.addEventListener("click", () => sendScore());
+    // クイズ中断・タイトルへ戻るボタン
+    quitToTitleBtn.addEventListener("click", () => {
+        const confirmQuit = confirm("クイズを中断してタイトルに戻りますか？\n（現在の進捗は破棄されます）");
+        if (confirmQuit) {
+            quizScreen.style.display = "none";
+            authSection.style.display = "block";
+            startScreen.style.display = "block";
+        }
+    });
 
     backToTitleBtn.addEventListener("click", () => {
         completionModal.style.display = "none";
@@ -781,7 +796,7 @@ currentSelectedCount = selectCount.value;
         // 🌟 20問 且つ 100% の特別判定！
         if (score === 100 && qCount === "20") {
             icon = "👑";
-            statusText = "👑 20問全勝!";
+            statusText = "👑 完全マスター!";
         } else if (score === 100) {
             icon = "💮";
             statusText = "100% (クリア!)";
