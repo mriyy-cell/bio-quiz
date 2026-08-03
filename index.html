@@ -11,17 +11,13 @@
             --primary-dark: #059669;
             --blue: #3b82f6;
             --blue-dark: #2563eb;
-            --accent: #f59e0b;
             --card-bg: #ffffff;
             --text-main: #334155;
         }
 
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
-            background: #e2e8f0;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+            background: #0f172a;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
@@ -29,75 +25,34 @@
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         .quiz-container {
             background-color: var(--card-bg);
             border-radius: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
             max-width: 520px;
             width: 100%;
             padding: 30px;
             box-sizing: border-box;
             text-align: center;
-            border: 4px solid #f1f5f9;
+            border: 4px solid #334155;
             position: relative;
             overflow: hidden;
+            transition: all 0.5s ease;
         }
 
-        .quiz-container::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b);
-        }
-
-        /* --- タイトルデザイン & 切り替え用スタイル --- */
-        .title-wrapper {
-            margin-top: 5px;
-            margin-bottom: 20px;
-        }
-
-        h1 {
+        /* 統一メインタイトル */
+        h1#main-title {
             font-size: 1.6rem;
             color: #0f172a;
-            margin: 0;
+            margin-top: 5px;
+            margin-bottom: 15px;
             font-weight: 800;
-            letter-spacing: -0.5px;
-            transition: all 0.3s ease;
-            padding: 8px 12px;
-            border-radius: 16px;
+            position: relative;
             display: inline-block;
-        }
-
-        /* スタイル 1: グラデーションテキスト (デフォルト) */
-        h1.title-style-1 {
-            background: linear-gradient(135deg, #059669 0%, #2563eb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        /* スタイル 2: POPポップなバッジスタイル */
-        h1.title-style-2 {
-            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
-            color: #ffffff !important;
-            -webkit-background-clip: border-box;
-            -webkit-text-fill-color: #ffffff;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-            text-shadow: 0 2px 2px rgba(0,0,0,0.2);
-        }
-
-        /* スタイル 3: ネオン・サイバー風格子 */
-        h1.title-style-3 {
-            background-color: #1e293b;
-            color: #38bdf8 !important;
-            -webkit-background-clip: border-box;
-            -webkit-text-fill-color: #38bdf8;
-            border: 2px solid #38bdf8;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-            text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+            transition: all 0.3s ease;
         }
 
         .btn {
@@ -116,219 +71,121 @@
             justify-content: center;
             gap: 8px;
         }
-        .btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.15);
-        }
+        .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
 
-        .btn-primary { 
-            background-color: var(--primary); 
-            color: white; 
-            box-shadow: 0 4px 0 var(--primary-dark);
-        }
-        .btn-primary:hover { background-color: #34d399; }
-
-        .btn-blue { 
-            background-color: var(--blue); 
-            color: white; 
-            width: 100%;
-            box-shadow: 0 4px 0 var(--blue-dark);
-        }
-        .btn-blue:hover { background-color: #60a5fa; }
-
-        .btn-outline {
-            background-color: transparent;
-            color: #64748b;
-            border: 2px solid #cbd5e1;
-            box-shadow: none;
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            border-radius: 20px;
-            margin-top: 8px;
-        }
-        .btn-outline:hover {
-            background-color: #f1f5f9;
-            color: #334155;
-        }
-
-        .btn-logout { 
-            background-color: #ef4444; 
-            color: white; 
-            font-size: 0.85rem; 
-            padding: 8px 16px; 
-            border-radius: 12px;
-            box-shadow: 0 3px 0 #dc2626;
-        }
-
-        .option-btn {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 14px 18px;
-            margin-bottom: 12px;
-            background-color: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            font-size: 1rem;
-            font-family: inherit;
-            font-weight: 700;
-            color: var(--text-main);
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-sizing: border-box;
-        }
-        .option-btn:hover {
-            background-color: #f1f5f9;
-            border-color: #cbd5e1;
-            transform: translateX(4px);
-        }
-
-        .key-badge {
-            background-color: #e2e8f0;
-            color: #475569;
-            border-radius: 8px;
-            padding: 2px 8px;
-            font-size: 0.85rem;
-            margin-right: 12px;
-            font-weight: 800;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 2px 0 #cbd5e1;
-            flex-shrink: 0;
-        }
-
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        #question-number { 
-            font-size: 0.9rem; 
-            font-weight: 800;
-            color: var(--primary); 
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        #streak-counter {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #d97706;
-            background-color: #fef3c7;
-            padding: 4px 10px;
-            border-radius: 20px;
-            border: 1px solid #fde68a;
-            display: none;
-            animation: popIn 0.2s ease;
-        }
-
-        #question-text { 
-            font-size: 1.15rem; 
-            font-weight: 700; 
-            color: #1e293b;
-            margin-bottom: 22px; 
-            text-align: left; 
-            line-height: 1.5; 
-        }
-
-        #result-area { 
-            margin-top: 15px; 
-            padding: 16px; 
-            border-radius: 16px; 
-            display: none; 
-            text-align: left; 
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        .result-correct { background-color: #ecfdf5; border: 2px solid #a7f3d0; color: #065f46; }
-        .result-wrong { background-color: #fef2f2; border: 2px solid #fecaca; color: #991b1b; }
+        .btn-primary { background-color: var(--primary); color: white; box-shadow: 0 4px 0 var(--primary-dark); }
+        .btn-blue { background-color: var(--blue); color: white; width: 100%; box-shadow: 0 4px 0 var(--blue-dark); }
+        .btn-logout { background-color: #ef4444; color: white; font-size: 0.85rem; padding: 8px 16px; border-radius: 12px; }
 
         .form-group { margin-bottom: 14px; text-align: left; }
         .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: #475569; }
         .form-group input, .form-group select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 2px solid #e2e8f0; 
-            border-radius: 12px; 
-            box-sizing: border-box; 
-            font-size: 1rem; 
-            font-family: inherit;
-            outline: none;
-            background-color: #ffffff;
-            transition: border-color 0.2s;
-        }
-        .form-group input:focus, .form-group select:focus { border-color: var(--blue); }
-
-        button:disabled {
-            background-color: #94a3b8 !important;
-            box-shadow: none !important;
-            cursor: not-allowed !important;
-            opacity: 0.7;
-            transform: none !important;
+            width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 12px; 
+            box-sizing: border-box; font-size: 1rem; font-family: inherit; outline: none; background: #fff;
         }
 
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            animation: popIn 0.2s ease;
+        /* 🧪 デバッグパネル */
+        #debug-panel {
+            background: #000; color: #00ffcc; padding: 10px; border-radius: 12px;
+            margin-bottom: 15px; font-size: 0.8rem; font-weight: bold; display: none;
+            border: 1px solid #00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.3);
+        }
+        #debug-panel button {
+            padding: 5px 8px; margin: 2px; font-size: 0.75rem; border-radius: 6px;
+            border: none; cursor: pointer; font-weight: bold; background: #334155; color: white;
+        }
+        #debug-panel button:hover { background: #00ffcc; color: black; }
+
+        /* =========================================================
+            🔥 COD武器迷彩風・アニメーション演出（常時演出のみ）
+        ========================================================= */
+
+        /* --- 🥇 1. GOLD (ゴールド迷彩) --- */
+        .camo-gold {
+            background: linear-gradient(110deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.5));
         }
 
-        .modal-content {
-            background: white;
-            padding: 30px 24px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            max-width: 360px;
-            width: 85%;
-            border: 4px solid #f1f5f9;
+        /* --- 💎 2. DIAMOND (ダイヤモンド迷彩) --- */
+        .camo-diamond {
+            background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 25%, #ffffff 50%, #818cf8 75%, #e0f2fe 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: diamondGlow 2s ease-in-out infinite alternate;
+        }
+        .camo-diamond::after {
+            content: "💎✨";
+            position: absolute; right: -35px; top: -10px; font-size: 1.2rem;
+            animation: floatDiamond 1.5s ease-in-out infinite alternate;
         }
 
-        .modal-content h2 {
-            margin-top: 0;
-            color: #0f172a;
-            font-size: 1.4rem;
+        /* --- 🌌 3. DARK MATTER (ダークマター迷彩) --- */
+        .camo-darkmatter {
+            background: linear-gradient(45deg, #4c1d95, #c026d3, #0284c7, #f43f5e, #4c1d95);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: magma 4s ease infinite;
+            filter: drop-shadow(0 0 8px rgba(192, 38, 211, 0.8));
         }
 
-        .modal-content p {
-            color: #475569;
-            font-size: 0.95rem;
-            margin-bottom: 20px;
+        /* --- 🌈 4. ORION / INTERSTELLAR (オリオン・極限迷彩) --- */
+        .camo-orion {
+            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf7, #ff00c8, #ff0000);
+            background-size: 400% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowFlow 2s linear infinite;
+            font-size: 1.8rem !important;
+            filter: drop-shadow(0 0 12px rgba(0, 255, 213, 0.8));
         }
+
+        /* 👑 カード外枠の迷彩化 */
+        .frame-gold { border-color: #ffd700 !important; box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important; }
+        .frame-diamond { border-color: #38bdf8 !important; box-shadow: 0 0 25px rgba(56, 189, 248, 0.7) !important; }
+        .frame-darkmatter { border-color: #c026d3 !important; box-shadow: 0 0 30px rgba(192, 38, 211, 0.8) !important; }
+        .frame-orion { border-color: #00ffd5 !important; box-shadow: 0 0 35px rgba(0, 255, 213, 0.9) !important; }
+
+        /* アニメーション定義 */
+        @keyframes shine { to { background-position: 200% center; } }
+        @keyframes diamondGlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        @keyframes magma { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes rainbowFlow { 0% { background-position: 0% 0%; } 100% { background-position: 400% 0%; } }
+        @keyframes floatDiamond { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-8px) rotate(15deg); } }
     </style>
 </head>
 <body>
 
-<div class="quiz-container">
-    <div class="title-wrapper">
-        <h1 id="main-title" class="title-style-1">🧬 生物基礎 一問一答 🔬</h1>
-        <div>
-            <button id="change-title-btn" class="btn btn-outline">🎨 タイトルデザイン変更</button>
+<div class="quiz-container" id="quiz-container-box">
+    <!-- 🧪 隠しデバッグコントロール (dキー3回連打で表示) -->
+    <div id="debug-panel">
+        <div>🧪 デバッグ: 👑数切り替え</div>
+        <div style="margin-top: 6px;">
+            <button onclick="applyTitleDecorationByCount(0)">0: Normal</button>
+            <button onclick="applyTitleDecorationByCount(1)">1: Gold</button>
+            <button onclick="applyTitleDecorationByCount(2)">2: Diamond</button>
+            <button onclick="applyTitleDecorationByCount(3)">3: DarkMatter</button>
+            <button onclick="applyTitleDecorationByCount(4)">4: Orion 🌈</button>
         </div>
     </div>
 
+    <!-- 👑 メインタイトル -->
+    <h1 id="main-title">🧬 生物基礎 一問一答 🔬</h1>
+
     <!-- 1. 認証エリア -->
     <div id="auth-section">
-        <p id="user-status" style="color: #64748b; font-weight: 700;">読み込み中...</p>
+        <p id="user-status" style="color: #94a3b8; font-weight: 700;">読み込み中...</p>
         <button id="login-btn" class="btn btn-primary" style="display: none;">Googleでログイン</button>
         <button id="logout-btn" class="btn btn-logout" style="display: none;">ログアウト</button>
     </div>
 
-    <!-- 2. タイトル（スタート・設定）画面 -->
-    <div id="start-screen" style="display: none; margin-top: 20px;">
+    <!-- 2. スタート画面 -->
+    <div id="start-screen" style="display: none; margin-top: 15px;">
         <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 16px;">
             🏆 達成度を確認する
         </button>
@@ -336,11 +193,8 @@
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
             <div class="form-group">
                 <label for="select-unit">📚 出題単元を選択</label>
-                <select id="select-unit">
-                    <!-- JavaScriptで動的生成 -->
-                </select>
+                <select id="select-unit"></select>
             </div>
-
             <div class="form-group" style="margin-bottom: 0;">
                 <label for="select-count">❓ 出題問題数を選択</label>
                 <select id="select-count">
@@ -356,90 +210,12 @@
             スタート 🕴️
         </button>
     </div>
-
-    <!-- 3. クイズ画面 -->
-    <div id="quiz-screen" style="display: none; margin-top: 20px;">
-        <div class="quiz-header">
-            <div id="question-number">QUESTION 01</div>
-            <div id="streak-counter">🔥 0問連続正解中！</div>
-        </div>
-        <div id="question-text">読み込み中...</div>
-        <div id="options-container"></div>
-        
-        <div id="result-area">
-            <div id="result-judge" style="font-weight: 800; font-size: 1.1rem;"></div>
-            <div id="result-explanation" style="margin-top: 6px; font-size: 0.95rem; line-height: 1.5;"></div>
-        </div>
-
-        <button id="next-btn" class="btn btn-blue" style="display: none; margin-top: 18px;">次の問題へ ➔</button>
-
-        <button id="quit-to-title-btn" class="btn" style="background-color: #94a3b8; color: white; width: 100%; margin-top: 12px; font-size: 0.9rem;">
-            🏠 タイトルに戻る
-        </button>
-    </div>
-
-    <!-- 4. 結果・成績送信画面 -->
-    <div id="result-screen" style="display: none; margin-top: 20px;">
-        <h2 style="margin-top: 0; color: #0f172a; font-weight: 800;">🎉 解答終了！</h2>
-        <p id="final-score" style="font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 15px 0;"></p>
-
-        <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">📋 スコアの提出</h3>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; font-weight: 700;">必要事項を入力して送信してください。</p>
-            
-            <div class="form-group">
-                <label for="input-grade">学年</label>
-                <input type="number" id="input-grade" placeholder="例: 1">
-            </div>
-            <div class="form-group">
-                <label for="input-class">組</label>
-                <input type="number" id="input-class" placeholder="例: 2">
-            </div>
-            <div class="form-group">
-                <label for="input-number">出席番号</label>
-                <input type="number" id="input-number" placeholder="例: 15">
-            </div>
-            <div class="form-group">
-                <label for="input-name">氏名</label>
-                <input type="text" id="input-name" placeholder="例: 山田 太郎">
-            </div>
-
-            <button id="submit-score-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                スコアを送信する 🤲
-            </button>
-            <p id="send-status" style="margin-top: 12px; font-weight: 700; font-size: 0.9rem;"></p>
-        </div>
-    </div>
-
-    <!-- 5. 達成度表示モーダル -->
-    <div id="stats-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content" style="max-width: 440px; text-align: left;">
-            <h2 style="text-align: center; margin-bottom: 15px;">🏆 単元別 達成度</h2>
-            <div id="stats-list-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
-            </div>
-            <button id="close-stats-btn" class="btn btn-primary" style="width: 100%;">
-                閉じる
-            </button>
-        </div>
-    </div>
-
-    <!-- 6. 送信完了モーダル -->
-    <div id="completion-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <h2>🎉 送信完了！</h2>
-            <p>提出が完了しました。<br>お疲れ様でした！</p>
-            <button id="back-to-title-btn" class="btn btn-primary" style="width: 100%;">
-                タイトルに戻る 😎
-            </button>
-        </div>
-    </div>
 </div>
 
-<!-- Firebase SDK & クイズ処理 -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBDjHDXa7fnOB39WI2D7eC7G_efPKZW6mk",
@@ -453,441 +229,64 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-
-    const authSection = document.getElementById("auth-section");
-    const userStatus = document.getElementById("user-status");
-    const loginBtn = document.getElementById("login-btn");
-    const logoutBtn = document.getElementById("logout-btn");
-    const startScreen = document.getElementById("start-screen");
-    const quizScreen = document.getElementById("quiz-screen");
-    const resultScreen = document.getElementById("result-screen");
-    const streakCounter = document.getElementById("streak-counter");
-    const selectUnit = document.getElementById("select-unit");
-    const selectCount = document.getElementById("select-count");
-    
-    const statsModal = document.getElementById("stats-modal");
-    const viewStatsBtn = document.getElementById("view-stats-btn");
-    const closeStatsBtn = document.getElementById("close-stats-btn");
-    const statsListContainer = document.getElementById("stats-list-container");
-    
-    const completionModal = document.getElementById("completion-modal");
-    const backToTitleBtn = document.getElementById("back-to-title-btn");
-    const submitScoreBtn = document.getElementById("submit-score-btn");
-    const quitToTitleBtn = document.getElementById("quit-to-title-btn");
 
     const mainTitle = document.getElementById("main-title");
-    const changeTitleBtn = document.getElementById("change-title-btn");
+    const quizContainerBox = document.getElementById("quiz-container-box");
 
-    let rawUnitsData = [];
-    let currentActiveQuestions = [];
-    let currentQuestionIndex = 0;
-    let score = 0;
-    let streak = 0;
-    let isAnswered = false;
-    let isSubmitted = false;
-    let currentSelectedCount = "10";
-    let titleStyleIndex = 1;
+    /* 👑 👑数を受け取ってデザインを即座に変更する関数 */
+    window.applyTitleDecorationByCount = function(crownCount) {
+        mainTitle.className = "";
+        quizContainerBox.classList.remove("frame-gold", "frame-diamond", "frame-darkmatter", "frame-orion");
 
-    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
-
-    // タイトルデザイン切替ボタン処理
-    changeTitleBtn.addEventListener("click", () => {
-        titleStyleIndex = (titleStyleIndex % 3) + 1;
-        mainTitle.className = `title-style-${titleStyleIndex}`;
-    });
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            userStatus.innerText = `ようこそ、${user.displayName} さん！`;
-            loginBtn.style.display = "none";
-            logoutBtn.style.display = "inline-block";
-            authSection.style.display = "block";
-            startScreen.style.display = "block";
-            loadQuestions();
-        } else {
-            userStatus.innerText = "🔒 ログインが必要です。";
-            loginBtn.style.display = "inline-block";
-            logoutBtn.style.display = "none";
-            authSection.style.display = "block";
-            startScreen.style.display = "none";
-            quizScreen.style.display = "none";
-            resultScreen.style.display = "none";
+        if (crownCount === 1) {
+            mainTitle.classList.add("camo-gold");
+            quizContainerBox.classList.add("frame-gold");
+        } else if (crownCount === 2) {
+            mainTitle.classList.add("camo-diamond");
+            quizContainerBox.classList.add("frame-diamond");
+        } else if (crownCount === 3) {
+            mainTitle.classList.add("camo-darkmatter");
+            quizContainerBox.classList.add("frame-darkmatter");
+        } else if (crownCount >= 4) {
+            mainTitle.classList.add("camo-orion");
+            quizContainerBox.classList.add("frame-orion");
         }
-    });
+    };
 
-    loginBtn.addEventListener("click", () => {
-        signInWithPopup(auth, provider).catch(error => alert("ログインエラー: " + error.message));
-    });
-
-    logoutBtn.addEventListener("click", () => signOut(auth));
-
-    async function loadQuestions() {
-        try {
-            const response = await fetch('./questions.json');
-            rawUnitsData = await response.json();
-            
-            selectUnit.innerHTML = "";
-
-            const allOpt = document.createElement("option");
-            allOpt.value = "all";
-            allOpt.innerText = "✨ すべての単元（全範囲）";
-            selectUnit.appendChild(allOpt);
-
-            if (Array.isArray(rawUnitsData)) {
-                rawUnitsData.forEach((unitObj, index) => {
-                    const opt = document.createElement("option");
-                    opt.value = index;
-                    opt.innerText = unitObj.title ? unitObj.title : `単元 ${index + 1}`;
-                    selectUnit.appendChild(opt);
-                });
-            }
-        } catch (error) {
-            console.error("問題データ読込エラー:", error);
-        }
-    }
-
-    document.getElementById("start-btn").addEventListener("click", () => {
-        currentSelectedCount = selectCount.value;
-        prepareQuizPool();
-
-        if (currentActiveQuestions.length === 0) {
-            alert("問題が見つかりませんでした。");
-            return;
-        }
-
-        authSection.style.display = "none";
-        startScreen.style.display = "none";
-        quizScreen.style.display = "block";
-        
-        currentQuestionIndex = 0;
-        score = 0;
-        streak = 0;
-        isSubmitted = false;
-        showQuestion();
-    });
-
-    function prepareQuizPool() {
-        const chosenUnitKey = selectUnit.value;
-        const chosenCountVal = selectCount.value;
-
-        let pool = [];
-
-        if (chosenUnitKey === "all") {
-            if (Array.isArray(rawUnitsData)) {
-                rawUnitsData.forEach(unit => {
-                    if (unit && unit.questions) {
-                        pool = pool.concat(unit.questions);
-                    }
-                });
-            }
-        } else {
-            const unitIndex = parseInt(chosenUnitKey, 10);
-            if (rawUnitsData[unitIndex] && rawUnitsData[unitIndex].questions) {
-                pool = [...rawUnitsData[unitIndex].questions];
-            }
-        }
-
-        pool.sort(() => Math.random() - 0.5);
-
-        if (chosenCountVal !== "all_questions") {
-            const limit = parseInt(chosenCountVal, 10);
-            pool = pool.slice(0, limit);
-        }
-
-        currentActiveQuestions = pool;
-    }
-
-    function showQuestion() {
-        isAnswered = false;
-        const q = currentActiveQuestions[currentQuestionIndex];
-
-        if (!q) return;
-
-        document.getElementById("question-number").innerText = `QUESTION ${String(currentQuestionIndex + 1).padStart(2, '0')} / ${currentActiveQuestions.length}`;
-        document.getElementById("question-text").innerText = q.question;
-        
-        if (streak >= 2) {
-            streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
-            streakCounter.style.display = "inline-block";
-        } else {
-            streakCounter.style.display = "none";
-        }
-
-        const optionsContainer = document.getElementById("options-container");
-        optionsContainer.innerHTML = "";
-        document.getElementById("result-area").style.display = "none";
-        document.getElementById("next-btn").style.display = "none";
-
-        if (q.options && Array.isArray(q.options)) {
-            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-
-            shuffledOptions.forEach((optionText, index) => {
-                const btn = document.createElement("button");
-                btn.className = "option-btn";
-                btn.innerHTML = `<span class="key-badge">${index + 1}</span> <span>${optionText}</span>`;
-                btn.onclick = () => checkAnswer(optionText, q.answer, q.explanation);
-                optionsContainer.appendChild(btn);
-            });
-        }
-    }
-
-    function checkAnswer(selected, correct, explanation) {
-        if (isAnswered) return;
-        isAnswered = true;
-
-        const buttons = document.querySelectorAll(".option-btn");
-        buttons.forEach(btn => btn.disabled = true);
-
-        const resultArea = document.getElementById("result-area");
-        const resultJudge = document.getElementById("result-judge");
-        const resultExplanation = document.getElementById("result-explanation");
-
-        if (selected === correct) {
-            score++;
-            streak++;
-            resultArea.className = "result-correct";
-            resultJudge.innerText = "⭕ 正解！ Excellent!";
-        } else {
-            streak = 0;
-            resultArea.className = "result-wrong";
-            resultJudge.innerText = `❌ 不正解... （正解: ${correct}）`;
-        }
-
-        if (streak >= 2) {
-            streakCounter.innerText = `🔥 ${streak}問連続正解中！`;
-            streakCounter.style.display = "inline-block";
-        } else {
-            streakCounter.style.display = "none";
-        }
-
-        resultExplanation.innerText = explanation || "";
-        resultArea.style.display = "block";
-
-        const nextBtn = document.getElementById("next-btn");
-        if (currentQuestionIndex < currentActiveQuestions.length - 1) {
-            nextBtn.innerText = "次の問題へ ➔ (Enter)";
-            nextBtn.onclick = handleNextAction;
-        } else {
-            nextBtn.innerText = "結果を見る ➔ (Enter)";
-            nextBtn.onclick = showResultScreen;
-        }
-        nextBtn.style.display = "block";
-    }
-
-    function handleNextAction() {
-        if (!isAnswered) return;
-        currentQuestionIndex++;
-        showQuestion();
-    }
-
-    function showResultScreen() {
-        quizScreen.style.display = "none";
-        const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
-        document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
-        resultScreen.style.display = "block";
-
-        const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
-        if (selectUnit.value !== "all") {
-            saveUnitScore(selectedUnitText, scorePercent, currentSelectedCount);
-        }
-    }
-
-    // イベントリスナー関係
-    viewStatsBtn.addEventListener("click", () => showStatsModal());
-    closeStatsBtn.addEventListener("click", () => { statsModal.style.display = "none"; });
-    submitScoreBtn.addEventListener("click", () => sendScore());
-    
-    // クイズ中断・タイトルへ戻るボタン
-    quitToTitleBtn.addEventListener("click", () => {
-        const confirmQuit = confirm("クイズを中断してタイトルに戻りますか？\n（現在の進捗は破棄されます）");
-        if (confirmQuit) {
-            quizScreen.style.display = "none";
-            authSection.style.display = "block";
-            startScreen.style.display = "block";
-        }
-    });
-
-    backToTitleBtn.addEventListener("click", () => {
-        completionModal.style.display = "none";
-        resultScreen.style.display = "none";
-        authSection.style.display = "block";
-        startScreen.style.display = "block";
-        
-        document.getElementById("input-grade").value = "";
-        document.getElementById("input-class").value = "";
-        document.getElementById("input-number").value = "";
-        document.getElementById("input-name").value = "";
-        
-        const statusText = document.getElementById("send-status");
-        submitScoreBtn.innerText = "スコアを送信する 🤲";
-        submitScoreBtn.disabled = false;
-        statusText.innerText = "";
-    });
-
+    /* 🕹️ 隠しキー操作 (「d」を3回連打) */
+    let keyStrokeHistory = [];
     document.addEventListener("keydown", (e) => {
-        if (quizScreen.style.display === "block") {
-            if (!isAnswered && ["1", "2", "3", "4"].includes(e.key)) {
-                const index = parseInt(e.key) - 1;
-                const buttons = document.querySelectorAll(".option-btn");
-                if (buttons[index]) {
-                    buttons[index].click();
-                }
-            }
-            else if (isAnswered && e.key === "Enter") {
-                const nextBtn = document.getElementById("next-btn");
-                if (nextBtn && nextBtn.style.display !== "none") {
-                    nextBtn.click();
-                }
-            }
-        }
-        else if (resultScreen.style.display === "block" && e.key === "Enter") {
-            if (!isSubmitted) {
-                sendScore();
+        if (e.key.toLowerCase() === "d") {
+            const now = Date.now();
+            keyStrokeHistory.push(now);
+            keyStrokeHistory = keyStrokeHistory.filter(t => now - t < 1000);
+
+            if (keyStrokeHistory.length >= 3) {
+                const debugPanel = document.getElementById("debug-panel");
+                debugPanel.style.display = (debugPanel.style.display === "none" || debugPanel.style.display === "") ? "block" : "none";
+                keyStrokeHistory = [];
             }
         }
     });
 
-    function sendScore() {
-        if (isSubmitted) return;
-
-        const grade = document.getElementById("input-grade").value;
-        const classNum = document.getElementById("input-class").value;
-        const number = document.getElementById("input-number").value;
-        const name = document.getElementById("input-name").value;
-        const statusText = document.getElementById("send-status");
-
-        if (!grade || !classNum || !number || !name) {
-            alert("学年、組、出席番号、氏名をすべて入力してください。");
-            return;
-        }
-
-        statusText.style.color = "#3b82f6";
-        statusText.innerText = "送信中...";
-        submitScoreBtn.disabled = true;
-
-        const scorePercentValue = Math.round((score / currentActiveQuestions.length) * 100);
-        const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
-        const totalQuestionCount = `${currentActiveQuestions.length}問`;
-
-        const formData = new FormData();
-        formData.append("entry.99129247", grade);
-        formData.append("entry.1271020973", classNum);
-        formData.append("entry.1313275559", number);
-        formData.append("entry.1655607218", name);
-        formData.append("entry.147621973", `${score} / ${currentActiveQuestions.length}問`);
-        formData.append("entry.1382560193", scorePercentValue);
-        formData.append("entry.1018835285", selectedUnitText);
-        formData.append("entry.1035606462", totalQuestionCount);
-
-        fetch(GOOGLE_FORM_URL, {
-            method: "POST",
-            mode: "no-cors",
-            body: formData
-        }).then(() => {
-            isSubmitted = true;
-            statusText.style.color = "#10b981";
-            statusText.innerText = "送信が完了しました！";
-            submitScoreBtn.innerText = "送信完了";
-            submitScoreBtn.disabled = true;
-
-            setTimeout(() => {
-                completionModal.style.display = "flex";
-            }, 500);
-
-        }).catch(error => {
-            console.error("送信エラー:", error);
-            statusText.style.color = "#ef4444";
-            statusText.innerText = "送信に失敗しました。もう一度試してください。";
-            submitScoreBtn.disabled = false;
-        });
-    }
-
-    async function saveUnitScore(unitTitle, scorePercent, questionCount) {
-        const user = auth.currentUser;
-        if (!user) return;
-
-        const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
-        const userStatsRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
-
-        try {
-            const docSnap = await getDoc(userStatsRef);
-            let previousHigh = 0;
-
-            if (docSnap.exists()) {
-                previousHigh = docSnap.data().scorePercent || 0;
-            }
-
-            if (scorePercent > previousHigh || (scorePercent === 100 && questionCount === "all_questions")) {
-                await setDoc(userStatsRef, {
-                    unitTitle: unitTitle,
-                    scorePercent: scorePercent,
-                    questionCount: questionCount,
-                    updatedAt: new Date()
-                }, { merge: true });
-            }
-        } catch (e) {
-            console.error("成績保存エラー:", e);
-        }
-    }
-
-    async function showStatsModal() {
-        const user = auth.currentUser;
-        if (!user) {
-            alert("達成度を確認するにはログインが必要です。");
-            return;
-        }
-
-        statsListContainer.innerHTML = "<p style='text-align:center;'>読み込み中...</p>";
-        statsModal.style.display = "flex";
-
-        try {
-            let htmlBuffer = "";
-
-            for (let i = 0; i < rawUnitsData.length; i++) {
-                const unitTitle = rawUnitsData[i].title || `単元 ${i + 1}`;
-                const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
-                
-                const docRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
-                const docSnap = await getDoc(docRef);
-
-                let icon = "➖";
-                let statusText = "未挑戦";
-                
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const score = data.scorePercent || 0;
-                    const qCount = data.questionCount || "";
-                    
-                    if (score === 100 && qCount === "all_questions") {
-                        icon = "👑";
-                        statusText = "完全マスター!";
-                    } else if (score === 100) {
-                        icon = "💮";
-                        statusText = "100%クリア!";
-                    } else if (score >= 80) {
-                        icon = "⭕️";
-                        statusText = `${score}%`;
-                    } else {
-                        icon = "💬";
-                        statusText = `${score}%`;
-                    }
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            document.getElementById("user-status").innerText = `ようこそ、${user.displayName} さん！`;
+            document.getElementById("auth-section").style.display = "block";
+            document.getElementById("start-screen").style.display = "block";
+            
+            // Firebaseから👑数をチェックして自動反映
+            const scoresRef = collection(db, "users", user.uid, "unitScores");
+            const querySnapshot = await getDocs(scoresRef);
+            let crownCount = 0;
+            querySnapshot.forEach(docSnap => {
+                if (docSnap.data().scorePercent === 100 && docSnap.data().questionCount === "all_questions") {
+                    crownCount++;
                 }
-                htmlBuffer += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #e2e8f0;">
-                        <div style="font-weight: 700; font-size: 0.95rem; color: #334155; flex: 1;">${unitTitle}</div>
-                        <div style="font-size: 1.2rem; margin: 0 10px;">${icon}</div>
-                        <div style="font-weight: 800; font-size: 0.9rem; color: #475569; width: 90px; text-align: right;">${statusText}</div>
-                    </div>
-                `;
-            }
-
-            statsListContainer.innerHTML = htmlBuffer;
-        } catch (e) {
-            console.error("達成度取得エラー:", e);
-            statsListContainer.innerHTML = "<p style='color:red; text-align:center;'>データの読み込みに失敗しました。</p>";
+            });
+            applyTitleDecorationByCount(crownCount);
         }
-    }
+    });
 </script>
 </body>
 </html>
