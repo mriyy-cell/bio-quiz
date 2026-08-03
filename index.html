@@ -278,6 +278,16 @@
     let userCrownCount = 0;
     let selectedLevel = 0; // ユーザーが選択中のランク(0〜4)
 
+    // 生物基礎の標準単元リスト（DB未接続時などのフォールバック）
+    const defaultUnits = [
+        "生物の特徴と細胞",
+        "遺伝情報とDNA",
+        "体内環境の維持",
+        "免疫",
+        "植生とバイオーム",
+        "生態系とその保全"
+    ];
+
     // 迷彩マスターデータ
     const camoLevels = [
         { level: 0, name: "Standard (ノーマル)", class: "", frame: "" },
@@ -339,16 +349,20 @@
             await loadUnits();
 
             // Firebaseから👑数の算出
-            const scoresRef = collection(db, "users", user.uid, "unitScores");
-            const querySnapshot = await getDocs(scoresRef);
-            let crowns = 0;
-            querySnapshot.forEach(docSnap => {
-                if (docSnap.data().scorePercent === 100 && docSnap.data().questionCount === "all_questions") {
-                    crowns++;
-                }
-            });
-
-            updateCrownUI(crowns);
+            try {
+                const scoresRef = collection(db, "users", user.uid, "unitScores");
+                const querySnapshot = await getDocs(scoresRef);
+                let crowns = 0;
+                querySnapshot.forEach(docSnap => {
+                    if (docSnap.data().scorePercent === 100 && docSnap.data().questionCount === "all_questions") {
+                        crowns++;
+                    }
+                });
+                updateCrownUI(crowns);
+            } catch (e) {
+                console.error("スコアの取得に失敗しました:", e);
+                updateCrownUI(0);
+            }
         } else {
             currentUser = null;
             document.getElementById("user-status").innerText = "ログインしてください";
@@ -363,22 +377,29 @@
     async function loadUnits() {
         const selectUnit = document.getElementById("select-unit");
         selectUnit.innerHTML = '<option value="all">全単元からランダム</option>';
+        
+        // 標準単元をあらかじめセット
+        const units = new Set(defaultUnits);
+
         try {
+            // Firestoreから単元名を追加取得
             const querySnapshot = await getDocs(collection(db, "questions"));
-            const units = new Set();
             querySnapshot.forEach(doc => {
                 const data = doc.data();
-                if (data.unit) units.add(data.unit);
-            });
-            units.forEach(unit => {
-                const option = document.createElement("option");
-                option.value = unit;
-                option.textContent = unit;
-                selectUnit.appendChild(option);
+                const unitName = data.unit || data.category || data.section;
+                if (unitName) units.add(unitName);
             });
         } catch (e) {
-            console.error("単元データの取得失敗:", e);
+            console.warn("Firestoreからの単元取得失敗（基本単元を表示します）:", e);
         }
+
+        // ドロップダウンに追加
+        units.forEach(unit => {
+            const option = document.createElement("option");
+            option.value = unit;
+            option.textContent = unit;
+            selectUnit.appendChild(option);
+        });
     }
 
     /* 🏆 達成度モーダルの表示 */
@@ -450,7 +471,6 @@
         const unit = document.getElementById("select-unit").value;
         const count = document.getElementById("select-count").value;
         alert(`クイズを開始します！\n単元: ${unit}\n問題数: ${count}`);
-        // ここに既存のクイズ画面遷移ロジックを記述してください
     });
 
     /* 🕹️ デバッグキー操作 (dキー3回連打) */
