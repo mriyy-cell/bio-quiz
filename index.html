@@ -54,11 +54,12 @@
             background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b);
         }
 
-        h1 {
+        /* 統一したメインタイトルスタイル */
+        h1#main-title {
             font-size: 1.6rem;
             color: #0f172a;
             margin-top: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-weight: 800;
             letter-spacing: -0.5px;
             transition: all 0.3s ease;
@@ -294,14 +295,14 @@
             animation: rainbowText 6s linear infinite;
             background-size: 300% 300%;
             text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-            font-size: 2rem !important;
+            font-size: 1.8rem !important;
         }
 
         .gold-title {
             background: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 1.8rem !important;
+            font-size: 1.7rem !important;
             text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
@@ -327,7 +328,8 @@
 <body>
 
 <div class="quiz-container" id="quiz-container-box">
-    <h1 id="top-title">🧬 生物基礎 一問一答 🔬</h1>
+    <!-- 👑 唯一のメインタイトル（全画面共通） -->
+    <h1 id="main-title">🧬 生物基礎 一問一答 🔬</h1>
 
     <!-- 1. 認証エリア -->
     <div id="auth-section">
@@ -336,15 +338,12 @@
         <button id="logout-btn" class="btn btn-logout" style="display: none;">ログアウト</button>
     </div>
 
-    <!-- 2. タイトル（スタート・設定）画面 -->
-    <div id="start-screen" style="display: none; margin-top: 20px;">
+    <!-- 2. スタート・設定画面 -->
+    <div id="start-screen" style="display: none; margin-top: 15px;">
         <!-- 🌟 豪華さレベルに合わせて表示されるバッジエリア -->
         <div id="master-badge-container" style="display: none; margin-bottom: 12px;">
             <span id="master-rank-badge" class="badge rounded-pill px-3 py-2 fs-6"></span>
         </div>
-
-        <!-- 👑 クイズアプリから豪華版の生物基礎タイトルへ変更！ -->
-        <h1 id="main-title" style="margin-bottom: 16px; font-weight: 800;">🧬 生物基礎 一問一答 🔬</h1>
         
         <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 16px;">
             🏆 達成度を確認する
@@ -831,9 +830,9 @@
         formData.append("entry.1313275559", number);
         formData.append("entry.1655607218", name);
         formData.append("entry.147621973", `${score} / ${currentActiveQuestions.length}問`);
-        formData.append("entry.1382560193", scorePercentValue);
         formData.append("entry.1018835285", selectedUnitText);
         formData.append("entry.1035606462", totalQuestionCount);
+        formData.append("entry.1382560193", scorePercentValue);
 
         fetch(GOOGLE_FORM_URL, {
             method: "POST",
