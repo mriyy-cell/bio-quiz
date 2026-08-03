@@ -43,6 +43,7 @@
             border: 4px solid #f1f5f9;
             position: relative;
             overflow: hidden;
+            transition: all 0.5s ease;
         }
 
         .quiz-container::before {
@@ -51,7 +52,97 @@
             top: 0; left: 0; right: 0;
             height: 8px;
             background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b);
+            z-index: 2;
         }
+
+        /* =========================================================
+           👑 COD迷彩風 タイトルデザイン アニメーション定義 👑
+           ========================================================= */
+        
+        /* 1. GOLD (王冠 1つ) - 流れる黄金メタルの輝き */
+        .camo-gold {
+            background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c) !important;
+            background-size: 400% 400% !important;
+            animation: goldFlow 8s ease infinite !important;
+            border-color: #ffd700 !important;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.6) !important;
+        }
+        .camo-gold h1 { color: #5c4010 !important; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+
+        @keyframes goldFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 2. DIAMOND (王冠 2つ) - ギラギラ輝くダイヤモンドパターン */
+        .camo-diamond {
+            background: #e2e8f0 !important;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8), transparent 60%),
+                linear-gradient(45deg, #cbd5e1 25%, transparent 25%), 
+                linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+                linear-gradient(-45deg, transparent 75%, #cbd5e1 75%) !important;
+            background-size: 100% 100%, 30px 30px, 30px 30px, 30px 30px, 30px 30px !important;
+            animation: diamondSparkle 4s linear infinite !important;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.5) !important;
+        }
+        .camo-diamond h1 { color: #0f172a !important; text-shadow: 0 0 10px rgba(255,255,255,0.9); }
+
+        @keyframes diamondSparkle {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+            50% { background-position: 0 0, 15px 15px, 15px 15px, 15px 15px, 15px 15px; filter: brightness(1.15); }
+            100% { background-position: 0 0, 30px 30px, 30px 30px, 30px 30px, 30px 30px; }
+        }
+
+        /* 3. DARK MATTER (王冠 3つ) - COD超人気迷彩：うねる紫とピンクの暗黒星雲 */
+        .camo-darkmatter {
+            background: linear-gradient(270deg, #090014, #2a0845, #6415c0, #ff007f, #1f0036) !important;
+            background-size: 1000% 1000% !important;
+            animation: darkMatterPlasma 10s ease infinite !important;
+            border-color: #d946ef !important;
+            box-shadow: 0 0 35px rgba(217, 70, 239, 0.7) !important;
+        }
+        .camo-darkmatter h1 { color: #ffffff !important; text-shadow: 0 0 12px #ff007f, 0 0 25px #a855f7; }
+
+        @keyframes darkMatterPlasma {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 4. NEBULA (王冠 4つ以上) - 幾何学的に明滅する最上級オーロラ迷彩 */
+        .camo-nebula {
+            background: linear-gradient(120deg, #0284c7, #7e22ce, #ec4899, #06b6d4, #3b82f6) !important;
+            background-size: 600% 600% !important;
+            animation: nebulaShift 7s ease infinite alternate !important;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 40px rgba(6, 182, 212, 0.8) !important;
+        }
+        .camo-nebula h1 { color: #ffffff !important; text-shadow: 0 0 10px #06b6d4, 0 0 20px #38bdf8; }
+
+        @keyframes nebulaShift {
+            0% { background-position: 0% 0%; filter: hue-rotate(0deg); }
+            100% { background-position: 100% 100%; filter: hue-rotate(360deg); }
+        }
+
+        /* タイトルデザイン変更モーダル用スタイル */
+        .theme-card {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            cursor: pointer;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .theme-card:hover:not(.locked) { transform: scale(1.02); }
+        .theme-card.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.6); }
 
         h1 {
             font-size: 1.6rem;
@@ -60,6 +151,7 @@
             margin-bottom: 20px;
             font-weight: 800;
             letter-spacing: -0.5px;
+            transition: color 0.3s;
         }
 
         .btn {
@@ -259,7 +351,7 @@
 </head>
 <body>
 
-<div class="quiz-container">
+<div class="quiz-container" id="main-quiz-container">
     <h1>🧬 生物基礎 一問一答 🔬</h1>
 
     <!-- 1. 認証エリア -->
@@ -271,8 +363,13 @@
 
     <!-- 2. タイトル（スタート・設定）画面 -->
     <div id="start-screen" style="display: none; margin-top: 20px;">
-        <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 16px;">
+        <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 12px;">
             🏆 達成度を確認する
+        </button>
+
+        <!-- 追加：タイトルデザイン変更ボタン（王冠1個以上で表示） -->
+        <button id="change-theme-btn" class="btn" style="width: 100%; margin-bottom: 16px; background-color: #8b5cf6; color: white; box-shadow: 0 4px 0 #6d28d9; display: none;">
+            🎨 タイトルデザイン変更
         </button>
 
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
@@ -299,7 +396,7 @@
         </button>
     </div>
 
-<!-- 3. クイズ画面 -->
+    <!-- 3. クイズ画面 -->
     <div id="quiz-screen" style="display: none; margin-top: 20px;">
         <div class="quiz-header">
             <div id="question-number">QUESTION 01</div>
@@ -318,7 +415,6 @@
         <button id="quit-to-title-btn" class="btn" style="background-color: #94a3b8; color: white; width: 100%; margin-top: 12px; font-size: 0.9rem;">
             🏠 タイトルに戻る
         </button>
- 
     </div>
 
     <!-- 4. 結果・成績送信画面 -->
@@ -376,6 +472,20 @@
             </button>
         </div>
     </div>
+
+    <!-- 追加：7. タイトルデザイン変更モーダル -->
+    <div id="theme-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 440px; text-align: left;">
+            <h2 style="text-align: center; margin-bottom: 10px;">🎨 デザイン選択</h2>
+            <p style="text-align: center; margin-bottom: 15px; font-size: 0.85rem;">獲得した王冠数に応じた迷彩デザインを選択できます。</p>
+            <div id="theme-list-container" style="max-height: 320px; overflow-y: auto; margin-bottom: 15px;">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+            <button id="close-theme-btn" class="btn btn-primary" style="width: 100%;">
+                閉じる
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Firebase SDK & クイズ処理 -->
@@ -398,6 +508,7 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
+    const mainQuizContainer = document.getElementById("main-quiz-container");
     const authSection = document.getElementById("auth-section");
     const userStatus = document.getElementById("user-status");
     const loginBtn = document.getElementById("login-btn");
@@ -419,6 +530,12 @@
     const submitScoreBtn = document.getElementById("submit-score-btn");
     const quitToTitleBtn = document.getElementById("quit-to-title-btn");
 
+    // デザイン変更要素
+    const changeThemeBtn = document.getElementById("change-theme-btn");
+    const themeModal = document.getElementById("theme-modal");
+    const themeListContainer = document.getElementById("theme-list-container");
+    const closeThemeBtn = document.getElementById("close-theme-btn");
+
     let rawUnitsData = [];
     let currentActiveQuestions = [];
     let currentQuestionIndex = 0;
@@ -426,7 +543,19 @@
     let streak = 0;
     let isAnswered = false;
     let isSubmitted = false;
-    let currentSelectedCount = "10"
+    let currentSelectedCount = "10";
+    
+    // 王冠数 & カスタムテーマ管理用変数
+    let userCrownCount = 0;
+    let currentThemeClass = ""; 
+
+    const CAMO_THEMES = [
+        { id: "", name: "デフォルト", reqCrowns: 0, class: "" },
+        { id: "camo-gold", name: "👑 Gold Camo (要王冠1)", reqCrowns: 1, class: "camo-gold" },
+        { id: "camo-diamond", name: "💎 Diamond Camo (要王冠2)", reqCrowns: 2, class: "camo-diamond" },
+        { id: "camo-darkmatter", name: "🌌 Dark Matter (要王冠3)", reqCrowns: 3, class: "camo-darkmatter" },
+        { id: "camo-nebula", name: "✨ Nebula Aurora (要王冠4)", reqCrowns: 4, class: "camo-nebula" }
+    ];
 
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
 
@@ -437,7 +566,9 @@
             logoutBtn.style.display = "inline-block";
             authSection.style.display = "block";
             startScreen.style.display = "block";
-            loadQuestions();
+            loadQuestions().then(() => {
+                checkUserCrownsAndApplyTheme();
+            });
         } else {
             userStatus.innerText = "🔒 ログインが必要です。";
             loginBtn.style.display = "inline-block";
@@ -446,6 +577,7 @@
             startScreen.style.display = "none";
             quizScreen.style.display = "none";
             resultScreen.style.display = "none";
+            applyThemeClass("");
         }
     });
 
@@ -480,11 +612,115 @@
         }
     }
 
+    /* 👑 王冠数のチェック & タイトルデザイン自動決定機能 */
+    async function checkUserCrownsAndApplyTheme() {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        let crowns = 0;
+        try {
+            for (let i = 0; i < rawUnitsData.length; i++) {
+                const unitTitle = rawUnitsData[i].title || `単元 ${i + 1}`;
+                const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
+                const docRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.scorePercent === 100 && data.questionCount === "all_questions") {
+                        crowns++;
+                    }
+                }
+            }
+            userCrownCount = crowns;
+
+            // ボタンの表示切替
+            if (userCrownCount >= 1) {
+                changeThemeBtn.style.display = "block";
+            } else {
+                changeThemeBtn.style.display = "none";
+            }
+
+            // 保存されたカスタムテーマ設定を呼び出す（なければ最高ランク自動適用）
+            const customThemeRef = doc(db, "users", user.uid, "settings", "theme");
+            const customThemeSnap = await getDoc(customThemeRef);
+
+            if (customThemeSnap.exists() && customThemeSnap.data().selectedTheme !== undefined) {
+                const savedTheme = customThemeSnap.data().selectedTheme;
+                // 保存されているテーマが必要王冠数を満たしているか検証
+                const themeObj = CAMO_THEMES.find(t => t.id === savedTheme);
+                if (themeObj && userCrownCount >= themeObj.reqCrowns) {
+                    applyThemeClass(themeObj.class);
+                    return;
+                }
+            }
+
+            // 初期設定：所持している最高の王冠テーマを自動セット
+            if (userCrownCount >= 4) applyThemeClass("camo-nebula");
+            else if (userCrownCount === 3) applyThemeClass("camo-darkmatter");
+            else if (userCrownCount === 2) applyThemeClass("camo-diamond");
+            else if (userCrownCount === 1) applyThemeClass("camo-gold");
+            else applyThemeClass("");
+
+        } catch (e) {
+            console.error("王冠数確認エラー:", e);
+        }
+    }
+
+    function applyThemeClass(className) {
+        currentThemeClass = className;
+        // 既存の迷彩クラスを取り除く
+        mainQuizContainer.classList.remove("camo-gold", "camo-diamond", "camo-darkmatter", "camo-nebula");
+        if (className) {
+            mainQuizContainer.classList.add(className);
+        }
+    }
+
+    // テーマ変更モーダル構築
+    changeThemeBtn.addEventListener("click", () => {
+        themeListContainer.innerHTML = "";
+        CAMO_THEMES.forEach(t => {
+            const isUnlocked = userCrownCount >= t.reqCrowns;
+            const div = document.createElement("div");
+            div.className = `theme-card ${isUnlocked ? '' : 'locked'}`;
+            
+            if (t.class) {
+                div.classList.add(t.class);
+            }
+
+            div.innerHTML = `
+                <div>${t.name}</div>
+                <div>${isUnlocked ? (currentThemeClass === t.class ? "【適用中】" : "選択") : "🔒 鍵"}</div>
+            `;
+
+            if (isUnlocked) {
+                div.onclick = async () => {
+                    applyThemeClass(t.class);
+                    themeModal.style.display = "none";
+                    // 設定保存
+                    const user = auth.currentUser;
+                    if (user) {
+                        try {
+                            await setDoc(doc(db, "users", user.uid, "settings", "theme"), {
+                                selectedTheme: t.id
+                            }, { merge: true });
+                        } catch(e) { console.error("テーマ保存エラー:", e); }
+                    }
+                };
+            }
+            themeListContainer.appendChild(div);
+        });
+        themeModal.style.display = "flex";
+    });
+
+    closeThemeBtn.addEventListener("click", () => {
+        themeModal.style.display = "none";
+    });
+
     document.getElementById("start-btn").addEventListener("click", () => {
-currentSelectedCount = selectCount.value;
+        currentSelectedCount = selectCount.value;
         prepareQuizPool();
 
-        // （以下略）
         if (currentActiveQuestions.length === 0) {
             alert("問題が見つかりませんでした。");
             return;
@@ -614,7 +850,8 @@ currentSelectedCount = selectCount.value;
         currentQuestionIndex++;
         showQuestion();
     }
-function showResultScreen() {
+
+    function showResultScreen() {
         quizScreen.style.display = "none";
         const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
         document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
@@ -622,7 +859,6 @@ function showResultScreen() {
 
         const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
         if (selectUnit.value !== "all") {
-            // 👇 currentSelectedCount（"10", "15", "20", "all_questions" のいずれか）を渡す
             saveUnitScore(selectedUnitText, scorePercent, currentSelectedCount);
         }
     }
@@ -631,7 +867,7 @@ function showResultScreen() {
     viewStatsBtn.addEventListener("click", () => showStatsModal());
     closeStatsBtn.addEventListener("click", () => { statsModal.style.display = "none"; });
     submitScoreBtn.addEventListener("click", () => sendScore());
-    // クイズ中断・タイトルへ戻るボタン
+    
     quitToTitleBtn.addEventListener("click", () => {
         const confirmQuit = confirm("クイズを中断してタイトルに戻りますか？\n（現在の進捗は破棄されます）");
         if (confirmQuit) {
@@ -656,6 +892,9 @@ function showResultScreen() {
         submitScoreBtn.innerText = "スコアを送信する 🤲";
         submitScoreBtn.disabled = false;
         statusText.innerText = "";
+
+        // 王冠数の再読み込み
+        checkUserCrownsAndApplyTheme();
     });
 
     document.addEventListener("keydown", (e) => {
@@ -736,7 +975,7 @@ function showResultScreen() {
         });
     }
     
-async function saveUnitScore(unitTitle, scorePercent, questionCount) {
+    async function saveUnitScore(unitTitle, scorePercent, questionCount) {
         const user = auth.currentUser;
         if (!user) return;
 
@@ -751,12 +990,11 @@ async function saveUnitScore(unitTitle, scorePercent, questionCount) {
                 previousHigh = docSnap.data().scorePercent || 0;
             }
 
-            // 🌟 変更箇所：100% かつ 「全問挑戦(all_questions)」でクリアした場合も更新対象にする
             if (scorePercent > previousHigh || (scorePercent === 100 && questionCount === "all_questions")) {
                 await setDoc(userStatsRef, {
                     unitTitle: unitTitle,
                     scorePercent: scorePercent,
-                    questionCount: questionCount, // "all_questions" などが保存される
+                    questionCount: questionCount,
                     updatedAt: new Date()
                 }, { merge: true });
             }
@@ -788,26 +1026,25 @@ async function saveUnitScore(unitTitle, scorePercent, questionCount) {
                 let icon = "➖";
                 let statusText = "未挑戦";
                 
-    if (docSnap.exists()) {
-        const data = docSnap.data();
-        const score = data.scorePercent || 0;
-        const qCount = data.questionCount || "";
-        
-        // 🌟 20問 且つ 100% の特別判定！
-        if (score === 100 && qCount === "all_questions") {
-            icon = "👑";
-            statusText = "完全マスター!";
-        } else if (score === 100) {
-            icon = "💮";
-            statusText = "100%クリア!";
-        } else if (score >= 80) {
-            icon = "⭕️";
-            statusText = `${score}%`;
-        } else {
-            icon = "💬";
-            statusText = `${score}%`;
-        }
-    }
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const score = data.scorePercent || 0;
+                    const qCount = data.questionCount || "";
+                    
+                    if (score === 100 && qCount === "all_questions") {
+                        icon = "👑";
+                        statusText = "完全マスター!";
+                    } else if (score === 100) {
+                        icon = "💮";
+                        statusText = "100%クリア!";
+                    } else if (score >= 80) {
+                        icon = "⭕️";
+                        statusText = `${score}%`;
+                    } else {
+                        icon = "💬";
+                        statusText = `${score}%`;
+                    }
+                }
                 htmlBuffer += `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #e2e8f0;">
                         <div style="font-weight: 700; font-size: 0.95rem; color: #334155; flex: 1;">${unitTitle}</div>
