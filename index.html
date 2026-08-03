@@ -11,6 +11,8 @@
             --primary-dark: #059669;
             --blue: #3b82f6;
             --blue-dark: #2563eb;
+            --purple: #8b5cf6;
+            --purple-dark: #7c3aed;
             --card-bg: #ffffff;
             --text-main: #334155;
         }
@@ -43,7 +45,6 @@
             transition: all 0.5s ease;
         }
 
-        /* 統一メインタイトル */
         h1#main-title {
             font-size: 1.6rem;
             color: #0f172a;
@@ -75,6 +76,7 @@
 
         .btn-primary { background-color: var(--primary); color: white; box-shadow: 0 4px 0 var(--primary-dark); }
         .btn-blue { background-color: var(--blue); color: white; width: 100%; box-shadow: 0 4px 0 var(--blue-dark); }
+        .btn-purple { background-color: var(--purple); color: white; width: 100%; box-shadow: 0 4px 0 var(--purple-dark); }
         .btn-logout { background-color: #ef4444; color: white; font-size: 0.85rem; padding: 8px 16px; border-radius: 12px; }
 
         .form-group { margin-bottom: 14px; text-align: left; }
@@ -96,11 +98,19 @@
         }
         #debug-panel button:hover { background: #00ffcc; color: black; }
 
-        /* =========================================================
-           🔥 COD武器迷彩風・アニメーション演出（常時演出のみ）
-        ========================================================= */
+        /* モーダル基本設定 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
 
-        /* --- 🥇 1. GOLD (ゴールド迷彩) --- */
+        .modal-content {
+            background: white; padding: 24px; border-radius: 20px;
+            text-align: center; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto;
+        }
+
+        /* 👑 COD武器迷彩風・アニメーション */
         .camo-gold {
             background: linear-gradient(110deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
             background-size: 200% auto;
@@ -110,13 +120,13 @@
             filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.5));
         }
 
-        /* --- 💎 2. DIAMOND (ダイヤモンド迷彩) --- */
         .camo-diamond {
             background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 25%, #ffffff 50%, #818cf8 75%, #e0f2fe 100%);
             background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: diamondGlow 2s ease-in-out infinite alternate;
+            position: relative;
         }
         .camo-diamond::after {
             content: "💎✨";
@@ -124,7 +134,6 @@
             animation: floatDiamond 1.5s ease-in-out infinite alternate;
         }
 
-        /* --- 🌌 3. DARK MATTER (ダークマター迷彩) --- */
         .camo-darkmatter {
             background: linear-gradient(45deg, #4c1d95, #c026d3, #0284c7, #f43f5e, #4c1d95);
             background-size: 300% 300%;
@@ -134,7 +143,6 @@
             filter: drop-shadow(0 0 8px rgba(192, 38, 211, 0.8));
         }
 
-        /* --- 🌈 4. ORION / INTERSTELLAR (オリオン・極限迷彩) --- */
         .camo-orion {
             background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bf7, #ff00c8, #ff0000);
             background-size: 400% 100%;
@@ -145,18 +153,25 @@
             filter: drop-shadow(0 0 12px rgba(0, 255, 213, 0.8));
         }
 
-        /* 👑 カード外枠の迷彩化 */
         .frame-gold { border-color: #ffd700 !important; box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important; }
         .frame-diamond { border-color: #38bdf8 !important; box-shadow: 0 0 25px rgba(56, 189, 248, 0.7) !important; }
         .frame-darkmatter { border-color: #c026d3 !important; box-shadow: 0 0 30px rgba(192, 38, 211, 0.8) !important; }
         .frame-orion { border-color: #00ffd5 !important; box-shadow: 0 0 35px rgba(0, 255, 213, 0.9) !important; }
 
-        /* アニメーション定義 */
         @keyframes shine { to { background-position: 200% center; } }
         @keyframes diamondGlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
         @keyframes magma { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes rainbowFlow { 0% { background-position: 0% 0%; } 100% { background-position: 400% 0%; } }
         @keyframes floatDiamond { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-8px) rotate(15deg); } }
+
+        /* 着せ替え選択の選択肢デザイン */
+        .camo-option {
+            padding: 12px; margin: 8px 0; border-radius: 12px; border: 2px solid #cbd5e1;
+            cursor: pointer; font-weight: bold; text-align: left; display: flex;
+            align-items: center; justify-content: space-between; transition: all 0.2s;
+        }
+        .camo-option:hover { background: #f1f5f9; }
+        .camo-option.active { border-color: #3b82f6; background: #eff6ff; }
     </style>
 </head>
 <body>
@@ -164,13 +179,13 @@
 <div class="quiz-container" id="quiz-container-box">
     <!-- 🧪 隠しデバッグコントロール (dキー3回連打で表示) -->
     <div id="debug-panel">
-        <div>🧪 デバッグ: 👑数切り替え</div>
+        <div>🧪 デバッグ: 獲得👑数切り替え</div>
         <div style="margin-top: 6px;">
-            <button onclick="applyTitleDecorationByCount(0)">0: Normal</button>
-            <button onclick="applyTitleDecorationByCount(1)">1: Gold</button>
-            <button onclick="applyTitleDecorationByCount(2)">2: Diamond</button>
-            <button onclick="applyTitleDecorationByCount(3)">3: DarkMatter</button>
-            <button onclick="applyTitleDecorationByCount(4)">4: Orion 🌈</button>
+            <button onclick="setDebugCrowns(0)">0: Normal</button>
+            <button onclick="setDebugCrowns(1)">1: Gold</button>
+            <button onclick="setDebugCrowns(2)">2: Diamond</button>
+            <button onclick="setDebugCrowns(3)">3: DarkMatter</button>
+            <button onclick="setDebugCrowns(4)">4: Orion 🌈</button>
         </div>
     </div>
 
@@ -186,20 +201,27 @@
 
     <!-- 2. スタート画面 -->
     <div id="start-screen" style="display: none; margin-top: 15px;">
-        <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 16px;">
+        <button id="view-stats-btn" class="btn btn-blue" style="margin-bottom: 10px;">
             🏆 達成度を確認する
+        </button>
+
+        <!-- 🎨 着せ替えボタン（👑1個以上で解放） -->
+        <button id="change-theme-btn" class="btn btn-purple" style="display: none; margin-bottom: 16px;">
+            🎨 タイトルデザイン変更
         </button>
 
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
             <div class="form-group">
                 <label for="select-unit">📚 出題単元を選択</label>
-                <select id="select-unit"></select>
+                <select id="select-unit">
+                    <option value="all">全単元からランダム</option>
+                </select>
             </div>
             <div class="form-group" style="margin-bottom: 0;">
                 <label for="select-count">❓ 出題問題数を選択</label>
                 <select id="select-count">
                     <option value="10">10問</option>
-                    <option value="15">15问</option>
+                    <option value="15">15問</option>
                     <option value="20">20問</option>
                     <option value="all_questions">全問挑戦</option>
                 </select>
@@ -209,6 +231,25 @@
         <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; width: 100%;">
             スタート 🕴️
         </button>
+    </div>
+</div>
+
+<!-- 🏆 達成度モーダル -->
+<div id="stats-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="margin-top:0; color:#1e293b;">🏆 単元別達成度</h2>
+        <div id="stats-list" style="text-align: left; margin: 15px 0;">読み込み中...</div>
+        <button id="close-stats-btn" class="btn btn-blue" style="width: 100%;">閉じる</button>
+    </div>
+</div>
+
+<!-- 🎨 デザイン着せ替えモーダル -->
+<div id="theme-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="margin-top:0; color:#1e293b;">🎨 迷彩カスタマイズ</h2>
+        <p style="font-size: 0.85rem; color: #64748b;">解放済みのタイトルデザインを選択できます</p>
+        <div id="theme-options-list"></div>
+        <button id="close-theme-btn" class="btn btn-purple" style="width: 100%; margin-top: 15px;">保存して閉じる</button>
     </div>
 </div>
 
@@ -233,58 +274,197 @@
     const mainTitle = document.getElementById("main-title");
     const quizContainerBox = document.getElementById("quiz-container-box");
 
-    /* 👑 👑数を受け取ってデザインを即座に変更する関数 */
-    window.applyTitleDecorationByCount = function(crownCount) {
+    let currentUser = null;
+    let userCrownCount = 0;
+    let selectedLevel = 0; // ユーザーが選択中のランク(0〜4)
+
+    // 迷彩マスターデータ
+    const camoLevels = [
+        { level: 0, name: "Standard (ノーマル)", class: "", frame: "" },
+        { level: 1, name: "🥇 GOLD CAMO", class: "camo-gold", frame: "frame-gold" },
+        { level: 2, name: "💎 DIAMOND CAMO", class: "camo-diamond", frame: "frame-diamond" },
+        { level: 3, name: "🌌 DARK MATTER", class: "camo-darkmatter", frame: "frame-darkmatter" },
+        { level: 4, name: "🌈 ORION (MASTER)", class: "camo-orion", frame: "frame-orion" }
+    ];
+
+    /* 🎨 タイトルデザインの適用 */
+    function applyStyleByLevel(level) {
         mainTitle.className = "";
         quizContainerBox.classList.remove("frame-gold", "frame-diamond", "frame-darkmatter", "frame-orion");
 
-        if (crownCount === 1) {
-            mainTitle.classList.add("camo-gold");
-            quizContainerBox.classList.add("frame-gold");
-        } else if (crownCount === 2) {
-            mainTitle.classList.add("camo-diamond");
-            quizContainerBox.classList.add("frame-diamond");
-        } else if (crownCount === 3) {
-            mainTitle.classList.add("camo-darkmatter");
-            quizContainerBox.classList.add("frame-darkmatter");
-        } else if (crownCount >= 4) {
-            mainTitle.classList.add("camo-orion");
-            quizContainerBox.classList.add("frame-orion");
+        const camo = camoLevels.find(c => c.level === level) || camoLevels[0];
+        if (camo.class) mainTitle.classList.add(camo.class);
+        if (camo.frame) quizContainerBox.classList.add(camo.frame);
+
+        localStorage.setItem("selected_camo_level", level);
+    }
+
+    /* 👑 クラウン数に基づいてUIを更新 */
+    function updateCrownUI(crownCount) {
+        userCrownCount = crownCount;
+        const changeThemeBtn = document.getElementById("change-theme-btn");
+
+        if (crownCount >= 1) {
+            changeThemeBtn.style.display = "block";
+        } else {
+            changeThemeBtn.style.display = "none";
         }
+
+        // 保存された選択レベルを取得、または所持最高レベルを適用
+        const savedLevel = localStorage.getItem("selected_camo_level");
+        if (savedLevel !== null && parseInt(savedLevel) <= crownCount) {
+            selectedLevel = parseInt(savedLevel);
+        } else {
+            selectedLevel = Math.min(crownCount, 4);
+        }
+
+        applyStyleByLevel(selectedLevel);
+    }
+
+    /* 🧪 デバッグ操作用 */
+    window.setDebugCrowns = function(count) {
+        updateCrownUI(count);
     };
 
-    /* 🕹️ 隠しキー操作 (「d」を3回連打) */
-    let keyStrokeHistory = [];
-    document.addEventListener("keydown", (e) => {
-        if (e.key.toLowerCase() === "d") {
-            const now = Date.now();
-            keyStrokeHistory.push(now);
-            keyStrokeHistory = keyStrokeHistory.filter(t => now - t < 1000);
+    /* 認証状態監視 */
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            document.getElementById("user-status").innerText = `ようこそ、${user.displayName} さん！`;
+            document.getElementById("login-btn").style.display = "none";
+            document.getElementById("logout-btn").style.display = "inline-flex";
+            document.getElementById("start-screen").style.display = "block";
 
-            if (keyStrokeHistory.length >= 3) {
-                const debugPanel = document.getElementById("debug-panel");
-                debugPanel.style.display = (debugPanel.style.display === "none" || debugPanel.style.display === "") ? "block" : "none";
-                keyStrokeHistory = [];
-            }
+            // 単元データのロード
+            await loadUnits();
+
+            // Firebaseから👑数の算出
+            const scoresRef = collection(db, "users", user.uid, "unitScores");
+            const querySnapshot = await getDocs(scoresRef);
+            let crowns = 0;
+            querySnapshot.forEach(docSnap => {
+                if (docSnap.data().scorePercent === 100 && docSnap.data().questionCount === "all_questions") {
+                    crowns++;
+                }
+            });
+
+            updateCrownUI(crowns);
+        } else {
+            currentUser = null;
+            document.getElementById("user-status").innerText = "ログインしてください";
+            document.getElementById("login-btn").style.display = "inline-flex";
+            document.getElementById("logout-btn").style.display = "none";
+            document.getElementById("start-screen").style.display = "none";
+            updateCrownUI(0);
         }
     });
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            document.getElementById("user-status").innerText = `ようこそ、${user.displayName} さん！`;
-            document.getElementById("auth-section").style.display = "block";
-            document.getElementById("start-screen").style.display = "block";
-            
-            // Firebaseから👑数をチェックして自動反映
-            const scoresRef = collection(db, "users", user.uid, "unitScores");
-            const querySnapshot = await getDocs(scoresRef);
-            let crownCount = 0;
-            querySnapshot.forEach(docSnap => {
-                if (docSnap.data().scorePercent === 100 && docSnap.data().questionCount === "all_questions") {
-                    crownCount++;
-                }
+    /* 📚 単元リスト読み込み */
+    async function loadUnits() {
+        const selectUnit = document.getElementById("select-unit");
+        selectUnit.innerHTML = '<option value="all">全単元からランダム</option>';
+        try {
+            const querySnapshot = await getDocs(collection(db, "questions"));
+            const units = new Set();
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.unit) units.add(data.unit);
             });
-            applyTitleDecorationByCount(crownCount);
+            units.forEach(unit => {
+                const option = document.createElement("option");
+                option.value = unit;
+                option.textContent = unit;
+                selectUnit.appendChild(option);
+            });
+        } catch (e) {
+            console.error("単元データの取得失敗:", e);
+        }
+    }
+
+    /* 🏆 達成度モーダルの表示 */
+    document.getElementById("view-stats-btn").addEventListener("click", async () => {
+        if (!currentUser) return;
+        const statsList = document.getElementById("stats-list");
+        statsList.innerHTML = "読み込み中...";
+        document.getElementById("stats-modal").style.display = "flex";
+
+        try {
+            const scoresRef = collection(db, "users", currentUser.uid, "unitScores");
+            const querySnapshot = await getDocs(scoresRef);
+            if (querySnapshot.empty) {
+                statsList.innerHTML = "<p>まだ記録がありません。</p>";
+                return;
+            }
+
+            let html = "<ul style='padding-left: 20px; margin: 0;'>";
+            querySnapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const crown = (data.scorePercent === 100 && data.questionCount === "all_questions") ? " 👑" : "";
+                html += `<li style="margin-bottom: 8px;"><strong>${docSnap.id}</strong>: 最高正解率 ${data.scorePercent}%${crown}</li>`;
+            });
+            html += "</ul>";
+            statsList.innerHTML = html;
+        } catch (e) {
+            statsList.innerHTML = "<p>データの取得に失敗しました。</p>";
+        }
+    });
+
+    document.getElementById("close-stats-btn").addEventListener("click", () => {
+        document.getElementById("stats-modal").style.display = "none";
+    });
+
+    /* 🎨 デザイン変更モーダルの処理 */
+    document.getElementById("change-theme-btn").addEventListener("click", () => {
+        const list = document.getElementById("theme-options-list");
+        list.innerHTML = "";
+
+        // 所持王冠数以下のデザインのみをリスト化
+        camoLevels.forEach(camo => {
+            if (camo.level <= userCrownCount) {
+                const item = document.createElement("div");
+                item.className = `camo-option ${selectedLevel === camo.level ? 'active' : ''}`;
+                item.innerHTML = `<span>${camo.name}</span> ${selectedLevel === camo.level ? '✓' : ''}`;
+                item.onclick = () => {
+                    selectedLevel = camo.level;
+                    applyStyleByLevel(selectedLevel);
+                    document.getElementById("change-theme-btn").click(); // 表示更新
+                };
+                list.appendChild(item);
+            }
+        });
+
+        document.getElementById("theme-modal").style.display = "flex";
+    });
+
+    document.getElementById("close-theme-btn").addEventListener("click", () => {
+        document.getElementById("theme-modal").style.display = "none";
+    });
+
+    /* ログイン / ログアウト */
+    const provider = new GoogleAuthProvider();
+    document.getElementById("login-btn").addEventListener("click", () => signInWithPopup(auth, provider));
+    document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
+
+    /* スタートボタン */
+    document.getElementById("start-btn").addEventListener("click", () => {
+        const unit = document.getElementById("select-unit").value;
+        const count = document.getElementById("select-count").value;
+        alert(`クイズを開始します！\n単元: ${unit}\n問題数: ${count}`);
+        // ここに既存のクイズ画面遷移ロジックを記述してください
+    });
+
+    /* 🕹️ デバッグキー操作 (dキー3回連打) */
+    let keyHistory = [];
+    document.addEventListener("keydown", (e) => {
+        if (e.key.toLowerCase() === "d") {
+            const now = Date.now();
+            keyHistory.push(now);
+            keyHistory = keyHistory.filter(t => now - t < 1000);
+            if (keyHistory.length >= 3) {
+                const panel = document.getElementById("debug-panel");
+                panel.style.display = panel.style.display === "none" || panel.style.display === "" ? "block" : "none";
+                keyHistory = [];
+            }
         }
     });
 </script>
