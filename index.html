@@ -347,9 +347,65 @@
             font-size: 0.95rem;
             margin-bottom: 20px;
         }
+
+        /* 🛠️ デバッグ用 UI スタイル */
+        #debug-panel {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #debug-trigger-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0;
+        }
+        #debug-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        #debug-panel select {
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
+
+<!-- 🛠️ デバッグコントロールパネル -->
+<div id="debug-panel">
+    <button id="debug-trigger-btn">🛠️ DBG</button>
+    <div id="debug-controls" style="display: none;">
+        <span>👑数:</span>
+        <select id="debug-crown-select">
+            <option value="auto">自動 (Firestore)</option>
+            <option value="0">0個 (Default)</option>
+            <option value="1">1個 (Gold)</option>
+            <option value="2">2個 (Diamond)</option>
+            <option value="3">3個 (Dark Matter)</option>
+            <option value="4">4個 (Nebula)</option>
+        </select>
+    </div>
+</div>
 
 <div class="quiz-container" id="main-quiz-container">
     <h1>🧬 生物基礎 一問一答 🔬</h1>
@@ -367,7 +423,7 @@
             🏆 達成度を確認する
         </button>
 
-        <!-- 追加：タイトルデザイン変更ボタン（王冠1個以上で表示） -->
+        <!-- タイトルデザイン変更ボタン（王冠1個以上で表示） -->
         <button id="change-theme-btn" class="btn" style="width: 100%; margin-bottom: 16px; background-color: #8b5cf6; color: white; box-shadow: 0 4px 0 #6d28d9; display: none;">
             🎨 タイトルデザイン変更
         </button>
@@ -473,7 +529,7 @@
         </div>
     </div>
 
-    <!-- 追加：7. タイトルデザイン変更モーダル -->
+    <!-- 7. タイトルデザイン変更モーダル -->
     <div id="theme-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 440px; text-align: left;">
             <h2 style="text-align: center; margin-bottom: 10px;">🎨 デザイン選択</h2>
@@ -536,6 +592,12 @@
     const themeListContainer = document.getElementById("theme-list-container");
     const closeThemeBtn = document.getElementById("close-theme-btn");
 
+    // 🛠️ デバッグ要素
+    const debugTriggerBtn = document.getElementById("debug-trigger-btn");
+    const debugControls = document.getElementById("debug-controls");
+    const debugCrownSelect = document.getElementById("debug-crown-select");
+    const DEBUG_PASSWORD = "0609";
+
     let rawUnitsData = [];
     let currentActiveQuestions = [];
     let currentQuestionIndex = 0;
@@ -558,6 +620,21 @@
     ];
 
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
+
+    // 🛠️ デバッグボタンクリック時の認証処理
+    debugTriggerBtn.addEventListener("click", () => {
+        if (debugControls.style.display === "none") {
+            const inputPass = prompt("デバッグ用パスワードを入力してください:");
+            if (inputPass === DEBUG_PASSWORD) {
+                debugControls.style.display = "flex";
+            } else if (inputPass !== null) {
+                alert("パスワードが違います。");
+            }
+        } else {
+            // もう一度クリックでパネルを閉じる
+            debugControls.style.display = "none";
+        }
+    });
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -617,55 +694,68 @@
         const user = auth.currentUser;
         if (!user) return;
 
-        let crowns = 0;
-        try {
-            for (let i = 0; i < rawUnitsData.length; i++) {
-                const unitTitle = rawUnitsData[i].title || `単元 ${i + 1}`;
-                const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
-                const docRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
-                const docSnap = await getDoc(docRef);
+        // 🛠️ デバッグ用の手動オーバーライドチェック
+        const debugVal = debugCrownSelect.value;
+        if (debugVal !== "auto") {
+            userCrownCount = parseInt(debugVal, 10);
+        } else {
+            let crowns = 0;
+            try {
+                for (let i = 0; i < rawUnitsData.length; i++) {
+                    const unitTitle = rawUnitsData[i].title || `単元 ${i + 1}`;
+                    const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
+                    const docRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
+                    const docSnap = await getDoc(docRef);
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.scorePercent === 100 && data.questionCount === "all_questions") {
-                        crowns++;
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.scorePercent === 100 && data.questionCount === "all_questions") {
+                            crowns++;
+                        }
                     }
                 }
+                userCrownCount = crowns;
+            } catch (e) {
+                console.error("王冠数確認エラー:", e);
             }
-            userCrownCount = crowns;
-
-            // ボタンの表示切替
-            if (userCrownCount >= 1) {
-                changeThemeBtn.style.display = "block";
-            } else {
-                changeThemeBtn.style.display = "none";
-            }
-
-            // 保存されたカスタムテーマ設定を呼び出す（なければ最高ランク自動適用）
-            const customThemeRef = doc(db, "users", user.uid, "settings", "theme");
-            const customThemeSnap = await getDoc(customThemeRef);
-
-            if (customThemeSnap.exists() && customThemeSnap.data().selectedTheme !== undefined) {
-                const savedTheme = customThemeSnap.data().selectedTheme;
-                // 保存されているテーマが必要王冠数を満たしているか検証
-                const themeObj = CAMO_THEMES.find(t => t.id === savedTheme);
-                if (themeObj && userCrownCount >= themeObj.reqCrowns) {
-                    applyThemeClass(themeObj.class);
-                    return;
-                }
-            }
-
-            // 初期設定：所持している最高の王冠テーマを自動セット
-            if (userCrownCount >= 4) applyThemeClass("camo-nebula");
-            else if (userCrownCount === 3) applyThemeClass("camo-darkmatter");
-            else if (userCrownCount === 2) applyThemeClass("camo-diamond");
-            else if (userCrownCount === 1) applyThemeClass("camo-gold");
-            else applyThemeClass("");
-
-        } catch (e) {
-            console.error("王冠数確認エラー:", e);
         }
+
+        // ボタンの表示切替
+        if (userCrownCount >= 1) {
+            changeThemeBtn.style.display = "block";
+        } else {
+            changeThemeBtn.style.display = "none";
+        }
+
+        // 保存されたカスタムテーマ設定を呼び出す（デバッグ時以外）
+        if (debugVal === "auto") {
+            try {
+                const customThemeRef = doc(db, "users", user.uid, "settings", "theme");
+                const customThemeSnap = await getDoc(customThemeRef);
+
+                if (customThemeSnap.exists() && customThemeSnap.data().selectedTheme !== undefined) {
+                    const savedTheme = customThemeSnap.data().selectedTheme;
+                    const themeObj = CAMO_THEMES.find(t => t.id === savedTheme);
+                    if (themeObj && userCrownCount >= themeObj.reqCrowns) {
+                        applyThemeClass(themeObj.class);
+                        return;
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // 最高ランクのテーマを自動セット
+        if (userCrownCount >= 4) applyThemeClass("camo-nebula");
+        else if (userCrownCount === 3) applyThemeClass("camo-darkmatter");
+        else if (userCrownCount === 2) applyThemeClass("camo-diamond");
+        else if (userCrownCount === 1) applyThemeClass("camo-gold");
+        else applyThemeClass("");
     }
+
+    // 🛠️ デバッグセレクトボックスの変更時に即座に反映
+    debugCrownSelect.addEventListener("change", () => {
+        checkUserCrownsAndApplyTheme();
+    });
 
     function applyThemeClass(className) {
         currentThemeClass = className;
@@ -699,7 +789,7 @@
                     themeModal.style.display = "none";
                     // 設定保存
                     const user = auth.currentUser;
-                    if (user) {
+                    if (user && debugCrownSelect.value === "auto") {
                         try {
                             await setDoc(doc(db, "users", user.uid, "settings", "theme"), {
                                 selectedTheme: t.id
