@@ -524,7 +524,7 @@ currentSelectedCount = selectCount.value;
 
         pool.sort(() => Math.random() - 0.5);
 
-        if (chosenCountVal !== "all") {
+        if (chosenCountVal !== "all_questions") {
             const limit = parseInt(chosenCountVal, 10);
             pool = pool.slice(0, limit);
         }
