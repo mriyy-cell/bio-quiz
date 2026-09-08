@@ -55,11 +55,7 @@
             z-index: 2;
         }
 
-        /* =========================================================
-           👑 COD迷彩風 タイトルデザイン アニメーション定義 👑
-           ========================================================= */
-        
-        /* 1. GOLD (王冠 1つ) - 流れる黄金メタルの輝き */
+        /* 👑 COD迷彩風 タイトルデザイン アニメーション定義 */
         .camo-gold {
             background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c) !important;
             background-size: 400% 400% !important;
@@ -75,7 +71,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* 2. DIAMOND (王冠 2つ) - ギラギラ輝くダイヤモンドパターン */
         .camo-diamond {
             background: #e2e8f0 !important;
             background-image: 
@@ -97,7 +92,6 @@
             100% { background-position: 0 0, 30px 30px, 30px 30px, 30px 30px, 30px 30px; }
         }
 
-        /* 3. DARK MATTER (王冠 3つ) - COD超人気迷彩：うねる紫とピンクの暗黒星雲 */
         .camo-darkmatter {
             background: linear-gradient(270deg, #090014, #2a0845, #6415c0, #ff007f, #1f0036) !important;
             background-size: 1000% 1000% !important;
@@ -113,7 +107,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* 4. NEBULA (王冠 4つ以上) - 幾何学的に明滅する最上級オーロラ迷彩 */
         .camo-nebula {
             background: linear-gradient(120deg, #0284c7, #7e22ce, #ec4899, #06b6d4, #3b82f6) !important;
             background-size: 600% 600% !important;
@@ -128,7 +121,6 @@
             100% { background-position: 100% 100%; filter: hue-rotate(360deg); }
         }
 
-        /* タイトルデザイン変更モーダル用スタイル */
         .theme-card {
             padding: 12px;
             margin: 8px 0;
@@ -387,6 +379,47 @@
             padding: 2px 6px;
             font-size: 0.8rem;
         }
+
+        /* 📝 復習（間違えた問題）表示用スタイル */
+        .wrong-questions-container {
+            margin-top: 20px;
+            text-align: left;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .wrong-item {
+            background: #fff;
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+        .wrong-item-title {
+            font-weight: 800;
+            color: #991b1b;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        .wrong-item-answer {
+            color: #059669;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .wrong-item-user {
+            color: #dc2626;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .wrong-item-explanation {
+            color: #475569;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -477,6 +510,14 @@
     <div id="result-screen" style="display: none; margin-top: 20px;">
         <h2 style="margin-top: 0; color: #0f172a; font-weight: 800;">🎉 解答終了！</h2>
         <p id="final-score" style="font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 15px 0;"></p>
+
+        <!-- 📝 間違えた問題の解答・解説エリア -->
+        <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155; text-align: left;">📖 間違えた問題の復習</h3>
+            <div id="wrong-questions-list" class="wrong-questions-container">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+        </div>
 
         <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0;">
             <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155;">📋 スコアの提出</h3>
@@ -606,6 +647,9 @@
     let isAnswered = false;
     let isSubmitted = false;
     let currentSelectedCount = "10";
+
+    // 📝 間違えた問題を保持する配列
+    let wrongQuestions = [];
     
     // 王冠数 & カスタムテーマ管理用変数
     let userCrownCount = 0;
@@ -631,7 +675,6 @@
                 alert("パスワードが違います。");
             }
         } else {
-            // もう一度クリックでパネルを閉じる
             debugControls.style.display = "none";
         }
     });
@@ -694,7 +737,6 @@
         const user = auth.currentUser;
         if (!user) return;
 
-        // 🛠️ デバッグ用の手動オーバーライドチェック
         const debugVal = debugCrownSelect.value;
         if (debugVal !== "auto") {
             userCrownCount = parseInt(debugVal, 10);
@@ -720,14 +762,12 @@
             }
         }
 
-        // ボタンの表示切替
         if (userCrownCount >= 1) {
             changeThemeBtn.style.display = "block";
         } else {
             changeThemeBtn.style.display = "none";
         }
 
-        // 保存されたカスタムテーマ設定を呼び出す（デバッグ時以外）
         if (debugVal === "auto") {
             try {
                 const customThemeRef = doc(db, "users", user.uid, "settings", "theme");
@@ -744,7 +784,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // 最高ランクのテーマを自動セット
         if (userCrownCount >= 4) applyThemeClass("camo-nebula");
         else if (userCrownCount === 3) applyThemeClass("camo-darkmatter");
         else if (userCrownCount === 2) applyThemeClass("camo-diamond");
@@ -752,21 +791,18 @@
         else applyThemeClass("");
     }
 
-    // 🛠️ デバッグセレクトボックスの変更時に即座に反映
     debugCrownSelect.addEventListener("change", () => {
         checkUserCrownsAndApplyTheme();
     });
 
     function applyThemeClass(className) {
         currentThemeClass = className;
-        // 既存の迷彩クラスを取り除く
         mainQuizContainer.classList.remove("camo-gold", "camo-diamond", "camo-darkmatter", "camo-nebula");
         if (className) {
             mainQuizContainer.classList.add(className);
         }
     }
 
-    // テーマ変更モーダル構築
     changeThemeBtn.addEventListener("click", () => {
         themeListContainer.innerHTML = "";
         CAMO_THEMES.forEach(t => {
@@ -787,7 +823,6 @@
                 div.onclick = async () => {
                     applyThemeClass(t.class);
                     themeModal.style.display = "none";
-                    // 設定保存
                     const user = auth.currentUser;
                     if (user && debugCrownSelect.value === "auto") {
                         try {
@@ -823,6 +858,7 @@
         currentQuestionIndex = 0;
         score = 0;
         streak = 0;
+        wrongQuestions = []; // 間違えた問題を初期化
         isSubmitted = false;
         showQuestion();
     });
@@ -896,6 +932,7 @@
         if (isAnswered) return;
         isAnswered = true;
 
+        const currentQ = currentActiveQuestions[currentQuestionIndex];
         const buttons = document.querySelectorAll(".option-btn");
         buttons.forEach(btn => btn.disabled = true);
 
@@ -912,6 +949,14 @@
             streak = 0;
             resultArea.className = "result-wrong";
             resultJudge.innerText = `❌ 不正解... （正解: ${correct}）`;
+
+            // 📝 不正解の場合、配列に記録
+            wrongQuestions.push({
+                question: currentQ.question,
+                userAnswer: selected,
+                correctAnswer: correct,
+                explanation: explanation || "解説はありません。"
+            });
         }
 
         if (streak >= 2) {
@@ -945,6 +990,27 @@
         quizScreen.style.display = "none";
         const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
         document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
+
+        // 📝 間違えた問題の解答・解説をレンダリング
+        const wrongListContainer = document.getElementById("wrong-questions-list");
+        wrongListContainer.innerHTML = "";
+
+        if (wrongQuestions.length === 0) {
+            wrongListContainer.innerHTML = "<p style='color: #10b981; font-weight: 700; text-align: center; margin: 10px 0;'>🎉 全問正解です！素晴らしい！</p>";
+        } else {
+            wrongQuestions.forEach((item, index) => {
+                const div = document.createElement("div");
+                div.className = "wrong-item";
+                div.innerHTML = `
+                    <div class="wrong-item-title">Q${index + 1}. ${item.question}</div>
+                    <div class="wrong-item-user">あなたの解答: ${item.userAnswer}</div>
+                    <div class="wrong-item-answer">正しい解答: ${item.correctAnswer}</div>
+                    <div class="wrong-item-explanation">💡 <b>解説:</b> ${item.explanation}</div>
+                `;
+                wrongListContainer.appendChild(div);
+            });
+        }
+
         resultScreen.style.display = "block";
 
         const selectedUnitText = selectUnit.options[selectUnit.selectedIndex].text;
@@ -983,7 +1049,6 @@
         submitScoreBtn.disabled = false;
         statusText.innerText = "";
 
-        // 王冠数の再読み込み
         checkUserCrownsAndApplyTheme();
     });
 
