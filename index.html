@@ -195,7 +195,7 @@
 <!-- Firebase SDK & クイズ処理 -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -318,6 +318,7 @@
         } else {
             userStatus.innerText = "🔒 ログインが必要です。";
             loginBtn.style.display = "inline-block";
+            loginBtn.disabled = false;
             logoutBtn.style.display = "none";
             loginNotice.style.display = "block";
             authSection.style.display = "block";
@@ -330,9 +331,32 @@
         }
     });
 
-    loginBtn.addEventListener("click", () => {
-        signInWithPopup(auth, provider).catch(error => alert("ログインエラー: " + error.message));
+    function isMobileDevice() {
+        return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 1 && window.matchMedia("(max-width: 768px)").matches);
+    }
+
+    function showLoginError(error) {
+        console.error("ログインエラー:", error);
+        userStatus.innerText = "ログインに失敗しました。通信状態を確認して、もう一度お試しください。";
+        loginBtn.disabled = false;
+    }
+
+    // モバイルではポップアップがブロックされやすいため、Googleの画面へ遷移して認証する。
+    loginBtn.addEventListener("click", async () => {
+        loginBtn.disabled = true;
+        try {
+            if (isMobileDevice()) {
+                await signInWithRedirect(auth, provider);
+            } else {
+                await signInWithPopup(auth, provider);
+            }
+        } catch (error) {
+            showLoginError(error);
+        }
     });
+
+    getRedirectResult(auth).catch(showLoginError);
 
     logoutBtn.addEventListener("click", () => signOut(auth));
 
