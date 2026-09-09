@@ -349,7 +349,6 @@
     loginBtn.addEventListener("click", async () => {
         loginBtn.disabled = true;
         try {
-            await authPersistence;
             if (isMobileDevice()) {
                 await signInWithRedirect(auth, provider);
             } else {
@@ -361,6 +360,7 @@
     });
 
     authPersistence
+        .catch((error) => console.warn("認証状態の保存設定を適用できませんでした。", error))
         .then(() => getRedirectResult(auth))
         .catch(showLoginError);
 
