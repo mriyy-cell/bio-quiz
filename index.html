@@ -40,8 +40,8 @@
 
     <!-- 1. 認証エリア -->
     <div id="auth-section">
-        <p id="user-status" style="color: #64748b; font-weight: 700;">読み込み中...</p>
         <button id="login-btn" class="btn btn-primary" style="display: none;">Googleでログイン</button>
+        <p id="login-notice" style="display: none; color: #64748b; font-weight: 700; white-space: pre-line; margin: 0 0 8px;">学校のGoogleアカウントではエラーが発生するため、個人のGoogleアカウントでログインしてください。</p>
         <button id="logout-btn" class="btn btn-logout" style="display: none;">ログアウト</button>
     </div>
 
@@ -75,9 +75,16 @@
             </div>
         </div>
 
+        <!-- 現在の王冠数と、これまでに獲得した累積ポイントを表示 -->
+        <div id="progress-summary" class="progress-summary" aria-label="現在の王冠数とポイント">
+            <span id="crown-summary" style="display: none;">👑:<strong id="crown-count-display">0</strong></span>
+            <span>pt:<strong id="point-count-display">0</strong></span>
+        </div>
+
         <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; width: 100%;">
             スタート
         </button>
+        <p id="user-status" style="color: #64748b; font-weight: 700; white-space: pre-line; margin-bottom: 0;">読み込み中...</p>
     </div>
 
     <!-- 3. クイズ画面 -->
@@ -105,10 +112,12 @@
     <div id="result-screen" style="display: none; margin-top: 20px;">
         <h2 style="margin-top: 0; color: #0f172a; font-weight: 800;">🎉 解答終了！</h2>
         <p id="final-score" style="font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 15px 0;"></p>
+        <!-- 今回のクイズで獲得したポイントを表示 -->
+        <p id="earned-points" class="earned-points"></p>
 
         <!-- 📝 間違えた問題の解答・解説エリア -->
         <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
-            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155; text-align: left;">📖 間違えた問題の復習</h3>
+            <h3 style="margin-top: 0; font-size: 1.1rem; color: #334155; text-align: left;">復習しよう！</h3>
             <div id="wrong-questions-list" class="wrong-questions-container">
                 <!-- JavaScriptで動的生成 -->
             </div>
@@ -205,6 +214,7 @@
 
     const mainQuizContainer = document.getElementById("main-quiz-container");
     const authSection = document.getElementById("auth-section");
+    const loginNotice = document.getElementById("login-notice");
     const userStatus = document.getElementById("user-status");
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
@@ -237,6 +247,12 @@
     const debugControls = document.getElementById("debug-controls");
     const debugCrownSelect = document.getElementById("debug-crown-select");
     const DEBUG_PASSWORD = "3094";
+    // 正解1問につき加算するポイント。ポイント表示・計算で共通利用する。
+    const POINTS_PER_CORRECT_ANSWER = 100;
+    const crownSummary = document.getElementById("crown-summary");
+    const crownCountDisplay = document.getElementById("crown-count-display");
+    const pointCountDisplay = document.getElementById("point-count-display");
+    const earnedPointsDisplay = document.getElementById("earned-points");
 
     let rawUnitsData = [];
     let currentActiveQuestions = [];
@@ -246,6 +262,10 @@
     let isAnswered = false;
     let isSubmitted = false;
     let currentSelectedCount = "10";
+    // 累積ポイントはログインユーザーごとにlocalStorageへ保存する。
+    let totalPoints = 0;
+    // 結果画面を複数回開いても、同じクイズのポイントを二重加算しないためのフラグ。
+    let pointsAddedForCurrentQuiz = false;
 
     // 📝 間違えた問題を保持する配列
     let wrongQuestions = [];
@@ -282,9 +302,14 @@
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            userStatus.innerText = `ようこそ、${user.displayName} さん！`;
+            // ユーザーごとの保存データから累積ポイントを読み込む。
+            totalPoints = Number(localStorage.getItem(`bioQuizPoints_${user.uid}`)) || 0;
+            updateProgressSummary();
+            userStatus.style.whiteSpace = "pre-line";
+            userStatus.innerText = `このサイトは宇治山田高校の学校教育の一環として \n使用を許可します。\n塾など、許可していない場合での活用を禁止します。\nログイン中: ${user.displayName}`;
             loginBtn.style.display = "none";
             logoutBtn.style.display = "inline-block";
+            loginNotice.style.display = "none";
             authSection.style.display = "block";
             startScreen.style.display = "block";
             loadQuestions().then(() => {
@@ -294,10 +319,13 @@
             userStatus.innerText = "🔒 ログインが必要です。";
             loginBtn.style.display = "inline-block";
             logoutBtn.style.display = "none";
+            loginNotice.style.display = "block";
             authSection.style.display = "block";
             startScreen.style.display = "none";
             quizScreen.style.display = "none";
             resultScreen.style.display = "none";
+            totalPoints = 0;
+            updateProgressSummary();
             applyThemeClass("");
         }
     });
@@ -369,6 +397,8 @@
             changeThemeBtn.style.display = "none";
         }
 
+        updateProgressSummary();
+
         if (debugVal === "auto") {
             try {
                 const customThemeRef = doc(db, "users", user.uid, "settings", "theme");
@@ -404,6 +434,13 @@
         if (className) {
             mainQuizContainer.classList.add(className);
         }
+    }
+
+    function updateProgressSummary() {
+        // タイトル画面の王冠数・累積ポイント表示を最新の値に更新する。
+        crownCountDisplay.innerText = userCrownCount;
+        crownSummary.style.display = userCrownCount >= 1 ? "inline" : "none";
+        pointCountDisplay.innerText = totalPoints;
     }
 
     changeThemeBtn.addEventListener("click", () => {
@@ -461,6 +498,8 @@
         currentQuestionIndex = 0;
         score = 0;
         streak = 0;
+        pointsAddedForCurrentQuiz = false;
+        earnedPointsDisplay.innerText = "";
         wrongQuestions = []; // 間違えた問題を初期化
         isSubmitted = false;
         showQuestion();
@@ -592,7 +631,23 @@
     function showResultScreen() {
         quizScreen.style.display = "none";
         const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
+        // 正解数に応じて今回の獲得ポイントを計算する。
+        const earnedPoints = score * POINTS_PER_CORRECT_ANSWER;
+
+        if (!pointsAddedForCurrentQuiz) {
+            // 結果を表示したタイミングで累積し、次回のタイトル画面にも反映する。
+            totalPoints += earnedPoints;
+            pointsAddedForCurrentQuiz = true;
+            const user = auth.currentUser;
+            if (user) {
+                // ログアウト後も同じユーザーで続きから使えるよう保存する。
+                localStorage.setItem(`bioQuizPoints_${user.uid}`, String(totalPoints));
+            }
+            updateProgressSummary();
+        }
+
         document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
+        earnedPointsDisplay.innerText = `${earnedPoints}pt獲得`;
 
         // 📝 間違えた問題の解答・解説をレンダリング
         const wrongListContainer = document.getElementById("wrong-questions-list");

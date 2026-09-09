@@ -104,6 +104,28 @@ body {
     transition: all 0.5s ease;
 }
 
+.progress-summary {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin: 4px 0 12px;
+    color: #475569;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.progress-summary strong {
+    color: var(--blue-dark);
+    margin-left: 3px;
+}
+
+.earned-points {
+    margin: -4px 0 18px;
+    color: var(--accent);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
 .quiz-container::before {
     content: "";
     position: absolute;
