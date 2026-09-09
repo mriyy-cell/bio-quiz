@@ -212,6 +212,10 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
+    if (window.location.protocol === "file:") {
+        document.getElementById("user-status").innerText = "このログイン機能は、ファイルを直接開かずWebサーバー経由で利用してください。";
+    }
+
     // アカウント選択後も認証状態を保持し、再読み込みでログイン画面へ戻らないようにする。
     const authPersistence = setPersistence(auth, browserLocalPersistence);
 
@@ -303,7 +307,9 @@
         }
     });
 
-    onAuthStateChanged(auth, (user) => {
+    authPersistence.catch((error) => {
+        console.warn("認証状態の保存設定を適用できませんでした。", error);
+    }).then(() => onAuthStateChanged(auth, (user) => {
         if (user) {
             // ユーザーごとの保存データから累積ポイントを読み込む。
             totalPoints = Number(localStorage.getItem(`bioQuizPoints_${user.uid}`)) || 0;
@@ -332,7 +338,7 @@
             updateProgressSummary();
             applyThemeClass("");
         }
-    });
+    }));
 
     function isMobileDevice() {
         return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
@@ -341,18 +347,33 @@
 
     function showLoginError(error) {
         console.error("ログインエラー:", error);
-        userStatus.innerText = "ログインに失敗しました。通信状態を確認して、もう一度お試しください。";
+        const errorCode = error?.code || "unknown";
+        userStatus.innerText = `ログインに失敗しました（${errorCode}）。通信状態と認証設定を確認してください。`;
         loginBtn.disabled = false;
     }
 
-    // モバイルではポップアップがブロックされやすいため、Googleの画面へ遷移して認証する。
+    // モバイルでもまずポップアップを試し、ブロックされた場合だけリダイレクトへ切り替える。
     loginBtn.addEventListener("click", async () => {
         loginBtn.disabled = true;
         try {
-            if (isMobileDevice()) {
-                await signInWithRedirect(auth, provider);
-            } else {
+            if (window.location.protocol === "file:") {
+                throw new Error("file-protocol-is-not-supported");
+            }
+            if (!isMobileDevice()) {
                 await signInWithPopup(auth, provider);
+                return;
+            }
+
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (popupError) {
+                const canUseRedirect = [
+                    "auth/popup-blocked",
+                    "auth/popup-cancelled-by-user",
+                    "auth/operation-not-supported-in-this-environment"
+                ].includes(popupError?.code);
+                if (!canUseRedirect) throw popupError;
+                await signInWithRedirect(auth, provider);
             }
         } catch (error) {
             showLoginError(error);
