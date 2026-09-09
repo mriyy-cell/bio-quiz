@@ -195,7 +195,7 @@
 <!-- Firebase SDK & クイズ処理 -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, setPersistence, browserLocalPersistence, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -211,6 +211,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
+
+    // アカウント選択後も認証状態を保持し、再読み込みでログイン画面へ戻らないようにする。
+    const authPersistence = setPersistence(auth, browserLocalPersistence);
 
     const mainQuizContainer = document.getElementById("main-quiz-container");
     const authSection = document.getElementById("auth-section");
@@ -346,6 +349,7 @@
     loginBtn.addEventListener("click", async () => {
         loginBtn.disabled = true;
         try {
+            await authPersistence;
             if (isMobileDevice()) {
                 await signInWithRedirect(auth, provider);
             } else {
@@ -356,7 +360,9 @@
         }
     });
 
-    getRedirectResult(auth).catch(showLoginError);
+    authPersistence
+        .then(() => getRedirectResult(auth))
+        .catch(showLoginError);
 
     logoutBtn.addEventListener("click", () => signOut(auth));
 
