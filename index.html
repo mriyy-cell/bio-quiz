@@ -9,6 +9,14 @@
 </head>
 <body>
 
+<!-- 生物系の絵文字を背景で降らせる装飾レイヤー（クイズ操作の対象外） -->
+<div class="bio-rain" aria-hidden="true">
+    <span>🧬</span><span>🦠</span><span>🌿</span><span>🔬</span><span>🧫</span><span>🌱</span>
+    <span>🧬</span><span>🍀</span><span>🦠</span><span>🌻</span><span>🧪</span><span>🌿</span>
+    <span>🧫</span><span>🧬</span><span>🌱</span><span>🦋</span><span>🔬</span><span>🦠</span>
+    <span>🌿</span><span>🧪</span><span>🧬</span><span>🍃</span><span>🧫</span><span>🌱</span>
+</div>
+
 <!-- 🛠️ デバッグコントロールパネル -->
 <div id="debug-panel">
     <button id="debug-trigger-btn">🛠️ DBG</button>
@@ -68,7 +76,7 @@
         </div>
 
         <button id="start-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 16px 40px; width: 100%;">
-            スタート 🕴️
+            スタート
         </button>
     </div>
 
@@ -128,7 +136,7 @@
             </div>
 
             <button id="submit-score-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                スコアを送信する 🤲
+                スコアを送信する 
             </button>
             <p id="send-status" style="margin-top: 12px; font-weight: 700; font-size: 0.9rem;"></p>
             <button id="result-back-to-title-btn" class="btn" style="width: 100%; margin-top: 12px; background-color: #94a3b8; color: white; box-shadow: 0 4px 0 #64748b;">
@@ -155,7 +163,7 @@
             <h2>🎉 送信完了！</h2>
             <p>提出が完了しました。<br>お疲れ様でした！</p>
             <button id="back-to-title-btn" class="btn btn-primary" style="width: 100%;">
-                タイトルに戻る 😎
+                タイトルに戻る 
             </button>
         </div>
     </div>

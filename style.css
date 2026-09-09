@@ -23,6 +23,69 @@ body {
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 生物系絵文字の背景レイヤー。画面固定・操作不可でクイズ本体の背面に置く */
+.bio-rain {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* 各絵文字は個別の位置・速度・遅延を使って自然に見えるようにする */
+.bio-rain span {
+    position: absolute;
+    top: -12vh;
+    left: var(--x);
+    font-size: clamp(1.4rem, 2.8vw, 2.6rem);
+    opacity: 0;
+    filter: saturate(0.85);
+    animation: bioFall var(--duration) linear var(--delay) infinite;
+}
+
+/* --x: 横位置、--duration: 落下時間、--delay: 開始位置のずれ */
+.bio-rain span:nth-child(1) { --x: 3%; --duration: 19s; --delay: -2s; }
+.bio-rain span:nth-child(2) { --x: 10%; --duration: 24s; --delay: -15s; }
+.bio-rain span:nth-child(3) { --x: 17%; --duration: 21s; --delay: -8s; }
+.bio-rain span:nth-child(4) { --x: 24%; --duration: 27s; --delay: -20s; }
+.bio-rain span:nth-child(5) { --x: 31%; --duration: 22s; --delay: -4s; }
+.bio-rain span:nth-child(6) { --x: 38%; --duration: 25s; --delay: -12s; }
+.bio-rain span:nth-child(7) { --x: 45%; --duration: 20s; --delay: -17s; }
+.bio-rain span:nth-child(8) { --x: 52%; --duration: 26s; --delay: -6s; }
+.bio-rain span:nth-child(9) { --x: 59%; --duration: 23s; --delay: -22s; }
+.bio-rain span:nth-child(10) { --x: 66%; --duration: 28s; --delay: -10s; }
+.bio-rain span:nth-child(11) { --x: 73%; --duration: 21s; --delay: -3s; }
+.bio-rain span:nth-child(12) { --x: 80%; --duration: 24s; --delay: -18s; }
+.bio-rain span:nth-child(13) { --x: 87%; --duration: 20s; --delay: -13s; }
+.bio-rain span:nth-child(14) { --x: 94%; --duration: 27s; --delay: -7s; }
+.bio-rain span:nth-child(15) { --x: 7%; --duration: 26s; --delay: -24s; }
+.bio-rain span:nth-child(16) { --x: 20%; --duration: 22s; --delay: -11s; }
+.bio-rain span:nth-child(17) { --x: 35%; --duration: 29s; --delay: -19s; }
+.bio-rain span:nth-child(18) { --x: 49%; --duration: 23s; --delay: -1s; }
+.bio-rain span:nth-child(19) { --x: 63%; --duration: 25s; --delay: -16s; }
+.bio-rain span:nth-child(20) { --x: 77%; --duration: 21s; --delay: -9s; }
+.bio-rain span:nth-child(21) { --x: 90%; --duration: 28s; --delay: -21s; }
+.bio-rain span:nth-child(22) { --x: 14%; --duration: 24s; --delay: -5s; }
+.bio-rain span:nth-child(23) { --x: 57%; --duration: 26s; --delay: -14s; }
+.bio-rain span:nth-child(24) { --x: 84%; --duration: 22s; --delay: -23s; }
+
+/* 画面上部から下部まで落下し、透明になって繰り返す */
+@keyframes bioFall {
+    0% {
+        transform: translate3d(0, -12vh, 0) rotate(-12deg);
+        opacity: 0;
+    }
+    10% { opacity: 0.5; }
+    50% { transform: translate3d(2.5vw, 55vh, 0) rotate(18deg); }
+    90% { opacity: 0.5; }
+    100% {
+        transform: translate3d(-2vw, 115vh, 0) rotate(42deg);
+        opacity: 0;
+    }
 }
 
 .quiz-container {
@@ -36,6 +99,7 @@ body {
     text-align: center;
     border: 4px solid #f1f5f9;
     position: relative;
+    z-index: 1;
     overflow: hidden;
     transition: all 0.5s ease;
 }
