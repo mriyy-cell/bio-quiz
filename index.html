@@ -394,11 +394,6 @@
             
             selectUnit.innerHTML = "";
 
-            const allOpt = document.createElement("option");
-            allOpt.value = "all";
-            allOpt.innerText = "すべての単元（全範囲）";
-            selectUnit.appendChild(allOpt);
-
             if (Array.isArray(rawUnitsData)) {
                 rawUnitsData.forEach((unitObj, index) => {
                     const opt = document.createElement("option");
@@ -407,6 +402,11 @@
                     selectUnit.appendChild(opt);
                 });
             }
+
+            const allOpt = document.createElement("option");
+            allOpt.value = "all";
+            allOpt.innerText = "すべての単元（全範囲）";
+            selectUnit.appendChild(allOpt);
         } catch (error) {
             console.error("問題データ読込エラー:", error);
         }
