@@ -6,6 +6,10 @@
     <title>生物基礎 一問一答</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- PWA用の設定 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10b981">
+<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 
@@ -42,11 +46,15 @@
     <div id="auth-section">
         <button id="login-btn" class="btn btn-primary" style="display: none;">Googleでログイン</button>
         <p id="login-notice" style="display: none; color: #64748b; font-weight: 700; white-space: pre-line; margin: 0 0 8px;">学校のGoogleアカウントではエラーが発生するため、個人のGoogleアカウントでログインしてください。</p>
+     <button id="guest-login-btn" class="btn btn-blue" style="margin-top: 10px;">ログインせずに始める（ゲスト）</button>
         <button id="logout-btn" class="btn btn-logout" style="display: none;">ログアウト</button>
     </div>
 
     <!-- 2. タイトル（スタート・設定）画面 -->
     <div id="start-screen" style="display: none; margin-top: 20px;">
+        <button id="guest-mode-login-btn" class="btn btn-primary" style="width: 100%; margin-bottom: 12px; display: none;">
+            🔑 Googleアカウントでログインする
+        </button>
         <button id="view-stats-btn" class="btn btn-blue" style="width: 100%; margin-bottom: 12px;">
             🏆 達成度を確認する
         </button>
@@ -212,19 +220,28 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    if (window.location.protocol === "file:") {
-        document.getElementById("user-status").innerText = "このログイン機能は、ファイルを直接開かずWebサーバー経由で利用してください。";
-    }
+    // Service Workerの登録（PWA化処理）
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.registerServiceWorker('./sw.js')
+      .then(reg => console.log('PWA Service Worker 登録成功:', reg.scope))
+      .catch(err => console.error('PWA Service Worker 登録失敗:', err));
+  });
+}
 
-    // アカウント選択後も認証状態を保持し、再読み込みでログイン画面へ戻らないようにする。
+    // 認証永続性の設定
     const authPersistence = setPersistence(auth, browserLocalPersistence);
 
+    // DOM要素の取得
     const mainQuizContainer = document.getElementById("main-quiz-container");
     const authSection = document.getElementById("auth-section");
     const loginNotice = document.getElementById("login-notice");
     const userStatus = document.getElementById("user-status");
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
+    const guestLoginBtn = document.getElementById("guest-login-btn");
+    const guestModeLoginBtn = document.getElementById("guest-mode-login-btn");
+
     const startScreen = document.getElementById("start-screen");
     const quizScreen = document.getElementById("quiz-screen");
     const resultScreen = document.getElementById("result-screen");
@@ -243,18 +260,16 @@
     const submitScoreBtn = document.getElementById("submit-score-btn");
     const quitToTitleBtn = document.getElementById("quit-to-title-btn");
 
-    // デザイン変更要素
     const changeThemeBtn = document.getElementById("change-theme-btn");
     const themeModal = document.getElementById("theme-modal");
     const themeListContainer = document.getElementById("theme-list-container");
     const closeThemeBtn = document.getElementById("close-theme-btn");
 
-    // 🛠️ デバッグ要素
     const debugTriggerBtn = document.getElementById("debug-trigger-btn");
     const debugControls = document.getElementById("debug-controls");
     const debugCrownSelect = document.getElementById("debug-crown-select");
     const DEBUG_PASSWORD = "3094";
-    // 正解1問につき加算するポイント。ポイント表示・計算で共通利用する。
+
     const POINTS_PER_CORRECT_ANSWER = 100;
     const crownSummary = document.getElementById("crown-summary");
     const crownCountDisplay = document.getElementById("crown-count-display");
@@ -269,17 +284,12 @@
     let isAnswered = false;
     let isSubmitted = false;
     let currentSelectedCount = "10";
-    // 累積ポイントはログインユーザーごとにlocalStorageへ保存する。
     let totalPoints = 0;
-    // 結果画面を複数回開いても、同じクイズのポイントを二重加算しないためのフラグ。
     let pointsAddedForCurrentQuiz = false;
-
-    // 📝 間違えた問題を保持する配列
     let wrongQuestions = [];
-    
-    // 王冠数 & カスタムテーマ管理用変数
     let userCrownCount = 0;
     let currentThemeClass = ""; 
+    let isGuestMode = false;
 
     const CAMO_THEMES = [
         { id: "", name: "デフォルト", reqCrowns: 0, class: "" },
@@ -293,7 +303,11 @@
 
     const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdSS5uTcSPGS5c41e09HNPL3Yad-LaCZOpPI9FbIGsUNqk-1A/formResponse";
 
-    // 🛠️ デバッグボタンクリック時の認証処理
+    if (window.location.protocol === "file:") {
+        userStatus.innerText = "このログイン機能は、ファイルを直接開かずWebサーバー経由で利用してください。";
+    }
+
+    // デバッグコントロール処理
     debugTriggerBtn.addEventListener("click", () => {
         if (debugControls.style.display === "none") {
             const inputPass = prompt("デバッグ用パスワードを入力してください:");
@@ -307,33 +321,90 @@
         }
     });
 
+    // 1. 最初の画面で「ログインせずに始める（ゲスト）」を押したとき
+    if (guestLoginBtn) {
+        guestLoginBtn.addEventListener("click", () => {
+            isGuestMode = true;
+            totalPoints = Number(localStorage.getItem("bioQuizPoints_guest")) || 0;
+            updateProgressSummary();
+
+            userStatus.style.whiteSpace = "pre-line";
+            userStatus.innerText = "👤 ゲストモードでプレイ中\n（※進捗はこの端末・ブラウザに保存されます）";
+
+            authSection.style.display = "none";
+            startScreen.style.display = "block";
+
+            if (guestModeLoginBtn) {
+                guestModeLoginBtn.style.display = "block";
+            }
+
+            loadQuestions().then(() => {
+                checkUserCrownsAndApplyTheme();
+            });
+        });
+    }
+
+    // 2. タイトル画面で「🔑 Googleアカウントでログインする」を押したとき
+    if (guestModeLoginBtn) {
+        guestModeLoginBtn.addEventListener("click", async () => {
+            try {
+                if (!isMobileDevice()) {
+                    await signInWithPopup(auth, provider);
+                } else {
+                    await signInWithPopup(auth, provider).catch(async (popupError) => {
+                        if (["auth/popup-blocked", "auth/popup-cancelled-by-user", "auth/operation-not-supported-in-this-environment"].includes(popupError?.code)) {
+                            await signInWithRedirect(auth, provider);
+                        } else {
+                            throw popupError;
+                        }
+                    });
+                }
+            } catch (error) {
+                showLoginError(error);
+            }
+        });
+    }
+
+    // 3. 認証状態の監視 (Firebase Auth)
     authPersistence.catch((error) => {
         console.warn("認証状態の保存設定を適用できませんでした。", error);
     }).then(() => onAuthStateChanged(auth, (user) => {
         if (user) {
-            // ユーザーごとの保存データから累積ポイントを読み込む。
+            isGuestMode = false;
+            if (guestModeLoginBtn) guestModeLoginBtn.style.display = "none";
+
             totalPoints = Number(localStorage.getItem(`bioQuizPoints_${user.uid}`)) || 0;
             updateProgressSummary();
             userStatus.style.whiteSpace = "pre-line";
             userStatus.innerText = `このサイトは宇治山田高校の学校教育の一環として \n使用を許可します。\n塾など、許可していない場合での活用を禁止します。\nログイン中: ${user.displayName}`;
+            
             loginBtn.style.display = "none";
-            logoutBtn.style.display = "inline-block";
+            guestLoginBtn.style.display = "none";
             loginNotice.style.display = "none";
+            logoutBtn.style.display = "block";
+            logoutBtn.style.margin = "0 auto 15px auto";
+            
             authSection.style.display = "block";
             startScreen.style.display = "block";
+
             loadQuestions().then(() => {
                 checkUserCrownsAndApplyTheme();
             });
-        } else {
+        } else if (!isGuestMode) {
+            // 未ログイン状態（最初の表示）
             userStatus.innerText = "🔒 ログインが必要です。";
             loginBtn.style.display = "inline-block";
             loginBtn.disabled = false;
+            guestLoginBtn.style.display = "inline-block";
             logoutBtn.style.display = "none";
             loginNotice.style.display = "block";
+            
             authSection.style.display = "block";
             startScreen.style.display = "none";
             quizScreen.style.display = "none";
             resultScreen.style.display = "none";
+            if (guestModeLoginBtn) guestModeLoginBtn.style.display = "none";
+
             totalPoints = 0;
             updateProgressSummary();
             applyThemeClass("");
@@ -352,7 +423,6 @@
         loginBtn.disabled = false;
     }
 
-    // モバイルでもまずポップアップを試し、ブロックされた場合だけリダイレクトへ切り替える。
     loginBtn.addEventListener("click", async () => {
         loginBtn.disabled = true;
         try {
@@ -385,7 +455,10 @@
         .then(() => getRedirectResult(auth))
         .catch(showLoginError);
 
-    logoutBtn.addEventListener("click", () => signOut(auth));
+    logoutBtn.addEventListener("click", () => {
+        isGuestMode = false;
+        signOut(auth);
+    });
 
     async function loadQuestions() {
         try {
@@ -412,7 +485,6 @@
         }
     }
 
-    /* 👑 王冠数のチェック & タイトルデザイン自動決定機能 */
     async function checkUserCrownsAndApplyTheme() {
         const user = auth.currentUser;
         if (!user) return;
@@ -488,7 +560,6 @@
     }
 
     function updateProgressSummary() {
-        // タイトル画面の王冠数・累積ポイント表示を最新の値に更新する。
         crownCountDisplay.innerText = userCrownCount;
         crownSummary.style.display = userCrownCount >= 1 ? "inline" : "none";
         pointCountDisplay.innerText = totalPoints;
@@ -551,7 +622,7 @@
         streak = 0;
         pointsAddedForCurrentQuiz = false;
         earnedPointsDisplay.innerText = "";
-        wrongQuestions = []; // 間違えた問題を初期化
+        wrongQuestions = [];
         isSubmitted = false;
         showQuestion();
     });
@@ -643,7 +714,6 @@
             resultArea.className = "result-wrong";
             resultJudge.innerText = `❌ 不正解... （正解: ${correct}）`;
 
-            // 📝 不正解の場合、配列に記録
             wrongQuestions.push({
                 question: currentQ.question,
                 userAnswer: selected,
@@ -682,17 +752,16 @@
     function showResultScreen() {
         quizScreen.style.display = "none";
         const scorePercent = Math.round((score / currentActiveQuestions.length) * 100);
-        // 正解数に応じて今回の獲得ポイントを計算する。
         const earnedPoints = score * POINTS_PER_CORRECT_ANSWER;
 
         if (!pointsAddedForCurrentQuiz) {
-            // 結果を表示したタイミングで累積し、次回のタイトル画面にも反映する。
             totalPoints += earnedPoints;
             pointsAddedForCurrentQuiz = true;
             const user = auth.currentUser;
             if (user) {
-                // ログアウト後も同じユーザーで続きから使えるよう保存する。
                 localStorage.setItem(`bioQuizPoints_${user.uid}`, String(totalPoints));
+            } else if (isGuestMode) {
+                localStorage.setItem("bioQuizPoints_guest", String(totalPoints));
             }
             updateProgressSummary();
         }
@@ -700,7 +769,6 @@
         document.getElementById("final-score").innerText = `スコア: ${score} / ${currentActiveQuestions.length} 問 (${scorePercent}%)`;
         earnedPointsDisplay.innerText = `${earnedPoints}pt獲得`;
 
-        // 📝 間違えた問題の解答・解説をレンダリング
         const wrongListContainer = document.getElementById("wrong-questions-list");
         wrongListContainer.innerHTML = "";
 
@@ -728,7 +796,6 @@
         }
     }
 
-    // イベントリスナー関係
     viewStatsBtn.addEventListener("click", () => showStatsModal());
     closeStatsBtn.addEventListener("click", () => { statsModal.style.display = "none"; });
     submitScoreBtn.addEventListener("click", () => sendScore());
@@ -737,7 +804,9 @@
         const confirmQuit = confirm("クイズを中断してタイトルに戻りますか？\n（現在の進捗は破棄されます）");
         if (confirmQuit) {
             quizScreen.style.display = "none";
-            authSection.style.display = "block";
+            if (!isGuestMode && auth.currentUser) {
+                authSection.style.display = "block";
+            }
             startScreen.style.display = "block";
         }
     });
@@ -745,7 +814,10 @@
     function resetToTitleScreen() {
         completionModal.style.display = "none";
         resultScreen.style.display = "none";
-        authSection.style.display = "block";
+        
+        if (!isGuestMode && auth.currentUser) {
+            authSection.style.display = "block";
+        }
         startScreen.style.display = "block";
 
         document.getElementById("input-grade").value = "";
