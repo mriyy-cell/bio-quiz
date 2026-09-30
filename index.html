@@ -376,7 +376,7 @@ if ('serviceWorker' in navigator) {
             totalPoints = Number(localStorage.getItem(`bioQuizPoints_${user.uid}`)) || 0;
             updateProgressSummary();
             userStatus.style.whiteSpace = "pre-line";
-            userStatus.innerText = `このサイトは宇治山田高校の学校教育の一環として \n使用を許可します。\n塾など、許可していない場合での活用を禁止します。\nログイン中: ${user.displayName}`;
+            userStatus.innerText = `このサイトは宇治山田高校の学校教育の一環として使用を許可します。\n塾など、許可していない場合での活用を禁止します。\nログイン中: ${user.displayName}`;
             
             loginBtn.style.display = "none";
             guestLoginBtn.style.display = "none";
