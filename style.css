@@ -8,7 +8,19 @@
     --text-main: #334155;
 }
 
-body {
+/* 1. 画面全体（背景）はバウンス防止・中央配置 */
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overscroll-behavior: none;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-family: 'M PLUS Rounded 1c', sans-serif;
     background: #f8fafc;
     background-image:
@@ -16,18 +28,44 @@ body {
         radial-gradient(at 80% 85%, rgba(224, 231, 255, 0.72) 0px, transparent 30%),
         radial-gradient(at 50% 50%, rgba(241, 245, 249, 0.95) 0px, transparent 42%),
         linear-gradient(180deg, #ffffff 0%, #f8fafc 48%, #eef2f7 100%);
-    min-height: 100vh;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     box-sizing: border-box;
     position: relative;
-    overflow-x: hidden;
 }
 
-/* 生物系絵文字の背景レイヤー。画面固定・操作不可でクイズ本体の背面に置く */
+/* 2. カード全体（縦長になったときはカードごとスワイプスクロールさせる） */
+.quiz-container {
+    background-color: var(--card-bg);
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh; /* 画面に納まる最大高 */
+    padding: 24px;
+    box-sizing: border-box;
+    text-align: center;
+    border: 4px solid #f1f5f9;
+    position: relative;
+    z-index: 1;
+    
+    /* 内容が溢れたらカード自体を滑らかにスクロール */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+/* 各画面要素が横幅いっぱいに収まるよう調整 */
+#auth-section, #start-screen, #quiz-screen, #result-screen {
+    width: 100%;
+}
+
+/* 入力フォームでのテキスト選択を許可 */
+input, select, textarea {
+    -webkit-user-select: auto;
+    user-select: auto;
+}
+
+/* 生物系絵文字の背景レイヤー */
 .bio-rain {
     position: fixed;
     inset: 0;
@@ -36,7 +74,6 @@ body {
     pointer-events: none;
 }
 
-/* 各絵文字は個別の位置・速度・遅延を使って自然に見えるようにする */
 .bio-rain span {
     position: absolute;
     top: -12vh;
@@ -47,7 +84,6 @@ body {
     animation: bioFall var(--duration) linear var(--delay) infinite;
 }
 
-/* --x: 横位置、--duration: 落下時間、--delay: 開始位置のずれ */
 .bio-rain span:nth-child(1) { --x: 3%; --duration: 19s; --delay: -2s; }
 .bio-rain span:nth-child(2) { --x: 10%; --duration: 24s; --delay: -15s; }
 .bio-rain span:nth-child(3) { --x: 17%; --duration: 21s; --delay: -8s; }
@@ -73,7 +109,6 @@ body {
 .bio-rain span:nth-child(23) { --x: 57%; --duration: 26s; --delay: -14s; }
 .bio-rain span:nth-child(24) { --x: 84%; --duration: 22s; --delay: -23s; }
 
-/* 画面上部から下部まで落下し、透明になって繰り返す */
 @keyframes bioFall {
     0% {
         transform: translate3d(0, -12vh, 0) rotate(-12deg);
@@ -86,22 +121,6 @@ body {
         transform: translate3d(-2vw, 115vh, 0) rotate(42deg);
         opacity: 0;
     }
-}
-
-.quiz-container {
-    background-color: var(--card-bg);
-    border-radius: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    max-width: 520px;
-    width: 100%;
-    padding: 30px;
-    box-sizing: border-box;
-    text-align: center;
-    border: 4px solid #f1f5f9;
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
-    transition: all 0.5s ease;
 }
 
 .progress-summary {
@@ -135,7 +154,7 @@ body {
     z-index: 2;
 }
 
-/* 👑 武器迷彩風の段階的デザイン（8段階：デフォルト含む） */
+/* 👑 武器迷彩風のデザイン設定 */
 .quiz-container:not(.camo-forest):not(.camo-emerald):not(.camo-jade):not(.camo-royal):not(.camo-aurora):not(.camo-legend) {
     background: #ffffff !important;
     border-color: #e2e8f0 !important;
@@ -145,12 +164,8 @@ body {
 .camo-forest {
     background: linear-gradient(120deg, #365314, #84cc16, #bef264, #15803d, #d9f99d) !important;
     background-size: 300% 300% !important;
-    background-image:
-        radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.72), transparent 24%),
-        linear-gradient(120deg, #365314, #84cc16, #bef264, #15803d, #d9f99d) !important;
     animation: forestFlow 10s ease infinite !important;
     border-color: rgba(255, 255, 255, 0.65) !important;
-    box-shadow: 0 18px 35px rgba(5, 150, 105, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
 }
 .camo-forest h1 { color: #064e3b !important; text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8); }
 
@@ -163,13 +178,8 @@ body {
 .camo-emerald {
     background: linear-gradient(120deg, #164e63, #0891b2, #67e8f9, #2563eb, #dbeafe) !important;
     background-size: 400% 400% !important;
-    background-image:
-        radial-gradient(circle at 20% 25%, rgba(255,255,255,0.82), transparent 22%),
-        radial-gradient(circle at 80% 75%, rgba(59, 130, 246, 0.3), transparent 26%),
-        linear-gradient(120deg, #164e63, #0891b2, #67e8f9, #2563eb, #dbeafe) !important;
     animation: emeraldPulse 7s ease infinite !important;
     border-color: rgba(255, 255, 255, 0.7) !important;
-    box-shadow: 0 18px 35px rgba(14, 116, 144, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 .camo-emerald h1 { color: #164e63 !important; text-shadow: 0 0 12px rgba(255, 255, 255, 0.85); }
 
@@ -182,13 +192,8 @@ body {
 .camo-jade {
     background: linear-gradient(120deg, #854d0e, #eab308, #fef08a, #f97316, #fff7ed) !important;
     background-size: 500% 500% !important;
-    background-image:
-        radial-gradient(circle at 78% 24%, rgba(255,255,255,0.9), transparent 20%),
-        radial-gradient(circle at 18% 78%, rgba(234, 88, 12, 0.28), transparent 25%),
-        linear-gradient(120deg, #854d0e, #eab308, #fef08a, #f97316, #fff7ed) !important;
     animation: jadeGlint 6s ease infinite !important;
     border-color: rgba(255, 255, 255, 0.7) !important;
-    box-shadow: 0 18px 35px rgba(217, 119, 6, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 .camo-jade h1 { color: #78350f !important; text-shadow: 0 0 12px rgba(255, 255, 255, 0.85); }
 
@@ -201,13 +206,8 @@ body {
 .camo-royal {
     background: linear-gradient(120deg, #701a75, #db2777, #f9a8d4, #facc15, #f8fafc, #be123c) !important;
     background-size: 700% 700% !important;
-    background-image:
-        radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.95), transparent 22%),
-        radial-gradient(circle at 78% 72%, rgba(255, 255, 255, 0.7), transparent 16%),
-        linear-gradient(120deg, #701a75, #db2777, #f9a8d4, #facc15, #f8fafc, #be123c) !important;
     animation: royalBloom 5s ease infinite !important;
     border-color: rgba(255, 255, 255, 0.72) !important;
-    box-shadow: 0 18px 35px rgba(219, 39, 119, 0.32), 0 0 24px rgba(250, 204, 21, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 .camo-royal h1 { color: #831843 !important; text-shadow: 0 0 16px rgba(255, 255, 255, 0.85); }
 
@@ -220,28 +220,16 @@ body {
 .camo-aurora {
     background: linear-gradient(120deg, #111827, #7e22ce, #ec4899, #22d3ee, #fef08a, #f8fafc, #312e81) !important;
     background-size: 900% 900% !important;
-    background-image:
-        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.95), transparent 18%),
-        radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.42), transparent 20%),
-        radial-gradient(circle at 52% 50%, rgba(255, 255, 255, 0.4), transparent 32%),
-        linear-gradient(120deg, #111827, #7e22ce, #ec4899, #22d3ee, #fef08a, #f8fafc, #312e81) !important;
     animation: auroraDrift 4s ease infinite alternate !important;
     border-color: rgba(255, 255, 255, 0.75) !important;
-    box-shadow: 0 18px 35px rgba(124, 58, 237, 0.34), 0 0 28px rgba(236, 72, 153, 0.25), 0 0 42px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
 }
 .camo-aurora h1 { color: #581c87 !important; text-shadow: 0 0 16px rgba(255, 255, 255, 0.9); }
 
 .camo-legend {
     background: linear-gradient(120deg, #020617, #312e81, #7e22ce, #db2777, #f59e0b, #fef08a, #f8fafc, #22d3ee, #020617) !important;
     background-size: 1100% 1100% !important;
-    background-image:
-        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.98), transparent 15%),
-        radial-gradient(circle at 78% 68%, rgba(250, 204, 21, 0.55), transparent 22%),
-        radial-gradient(circle at 52% 50%, rgba(34, 211, 238, 0.38), transparent 30%),
-        linear-gradient(120deg, #020617, #312e81, #7e22ce, #db2777, #f59e0b, #fef08a, #f8fafc, #22d3ee, #020617) !important;
     animation: legendaryFlash 3s ease infinite alternate !important;
     border-color: rgba(255, 255, 255, 0.82) !important;
-    box-shadow: 0 18px 35px rgba(30, 27, 75, 0.42), 0 0 28px rgba(236, 72, 153, 0.38), 0 0 48px rgba(34, 211, 238, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.98) !important;
 }
 .camo-legend h1 { color: #312e81 !important; text-shadow: 0 0 16px rgba(255, 255, 255, 0.98), 0 0 28px rgba(250, 204, 21, 0.7); }
 
@@ -268,67 +256,7 @@ body {
     align-items: center;
     transition: all 0.2s;
     background: linear-gradient(135deg, #ffffff, #f8fafc);
-    box-shadow: none;
     color: #0f172a;
-    background-size: 220% 220%;
-    animation: themeCardShimmer 5s ease-in-out infinite;
-}
-.theme-card.camo-forest,
-.theme-card.camo-emerald,
-.theme-card.camo-jade,
-.theme-card.camo-royal,
-.theme-card.camo-aurora,
-.theme-card.camo-legend {
-    border: 1px solid rgba(148, 163, 184, 0.4) !important;
-    box-shadow: none !important;
-    background-image: none !important;
-    color: #0f172a !important;
-}
-
-.theme-card.camo-forest {
-    background: linear-gradient(120deg, #365314, #84cc16, #bef264, #15803d, #d9f99d) !important;
-    border-color: #84cc16 !important;
-    animation-duration: 6s;
-}
-
-.theme-card.camo-emerald {
-    background: linear-gradient(120deg, #164e63, #0891b2, #67e8f9, #2563eb, #dbeafe) !important;
-    border-color: #22d3ee !important;
-    animation-duration: 5s;
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.18) !important;
-}
-
-.theme-card.camo-jade {
-    background: linear-gradient(120deg, #854d0e, #eab308, #fef08a, #f97316, #fff7ed) !important;
-    border-color: #facc15 !important;
-    animation-duration: 4.5s;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.22) !important;
-}
-
-.theme-card.camo-royal {
-    background: linear-gradient(120deg, #701a75, #db2777, #f9a8d4, #facc15, #f8fafc, #be123c) !important;
-    border-color: #f9a8d4 !important;
-    animation-duration: 4s;
-    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.25) !important;
-}
-
-.theme-card.camo-aurora {
-    background: linear-gradient(120deg, #111827, #7e22ce, #ec4899, #22d3ee, #fef08a, #f8fafc, #312e81) !important;
-    border-color: #e879f9 !important;
-    animation-duration: 3.5s;
-    box-shadow: 0 4px 18px rgba(168, 85, 247, 0.3), 0 0 12px rgba(34, 211, 238, 0.18) !important;
-}
-
-.theme-card.camo-legend {
-    background: linear-gradient(120deg, #020617, #7e22ce, #db2777, #f59e0b, #fef08a, #22d3ee, #020617) !important;
-    border-color: #fef08a !important;
-    animation-duration: 2.8s;
-    box-shadow: 0 4px 18px rgba(126, 34, 206, 0.35), 0 0 14px rgba(250, 204, 21, 0.3) !important;
-}
-
-@keyframes themeCardShimmer {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
 }
 
 .theme-card:hover:not(.locked) { transform: scale(1.02); }
@@ -341,7 +269,6 @@ h1 {
     margin-bottom: 20px;
     font-weight: 800;
     letter-spacing: -0.5px;
-    transition: color 0.3s;
 }
 
 .btn {
@@ -450,7 +377,6 @@ h1 {
     border-radius: 20px;
     border: 1px solid #fde68a;
     display: none;
-    animation: popIn 0.2s ease;
 }
 
 #question-text { 
@@ -468,12 +394,8 @@ h1 {
     border-radius: 16px; 
     display: none; 
     text-align: left; 
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-@keyframes popIn {
-    0% { opacity: 0; transform: scale(0.95); }
-    100% { opacity: 1; transform: scale(1); }
-}
+
 .result-correct { background-color: #ecfdf5; border: 2px solid #a7f3d0; color: #065f46; }
 .result-wrong { background-color: #fef2f2; border: 2px solid #fecaca; color: #991b1b; }
 
@@ -489,9 +411,7 @@ h1 {
     font-family: inherit;
     outline: none;
     background-color: #ffffff;
-    transition: border-color 0.2s;
 }
-.form-group input:focus, .form-group select:focus { border-color: var(--blue); }
 
 button:disabled {
     background-color: #94a3b8 !important;
@@ -512,7 +432,6 @@ button:disabled {
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    animation: popIn 0.2s ease;
 }
 
 .modal-content {
@@ -526,65 +445,21 @@ button:disabled {
     border: 4px solid #f1f5f9;
 }
 
-.modal-content h2 {
-    margin-top: 0;
-    color: #0f172a;
-    font-size: 1.4rem;
-}
-
-.modal-content p {
-    color: #475569;
-    font-size: 0.95rem;
-    margin-bottom: 20px;
-}
-
-/* 🛠️ デバッグ用 UI スタイル */
 #debug-panel {
     position: fixed;
     top: 15px;
     right: 15px;
-    background: rgba(15, 23, 42, 0.9);
     color: #ffffff;
     padding: 8px 12px;
     border-radius: 12px;
     font-size: 0.8rem;
     z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border: 1px solid #334155;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-#debug-trigger-btn {
-    background: none;
-    border: none;
-    color: #ffffff;
-    font-weight: 800;
-    cursor: pointer;
-    font-size: 0.85rem;
-    padding: 0;
-}
-#debug-controls {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-#debug-panel select {
-    background: #1e293b;
-    color: #fff;
-    border: 1px solid #475569;
-    border-radius: 6px;
-    padding: 2px 6px;
-    font-size: 0.8rem;
 }
 
-/* 📝 復習（間違えた問題）表示用スタイル */
+/* 📝 復習（間違えた問題）表示用スタイル（スクロール固定を解除） */
 .wrong-questions-container {
-    margin-top: 20px;
+    margin-top: 15px;
     text-align: left;
-    max-height: 280px;
-    overflow-y: auto;
-    padding-right: 5px;
 }
 .wrong-item {
     background: #fff;
