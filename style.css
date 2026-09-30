@@ -33,13 +33,13 @@ html, body {
 }
 
 /* 2. カード全体（縦長になったときはカードごとスワイプスクロールさせる） */
+/* 2. カード全体の設定（デフォルトはスクロール不可） */
 .quiz-container {
     background-color: var(--card-bg);
     border-radius: 24px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     max-width: 500px;
     width: 90%;
-    max-height: 90vh; /* 画面に納まる最大高 */
     padding: 24px;
     box-sizing: border-box;
     text-align: center;
@@ -47,11 +47,17 @@ html, body {
     position: relative;
     z-index: 1;
     
-    /* 内容が溢れたらカード自体を滑らかにスクロール */
-    overflow-y: auto;
+    /* 普段（ログイン・タイトル・クイズ画面）はスクロール不可でピタッと固定 */
+    overflow: hidden;
+    transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+/* 3. 結果・提出画面（#result-screen）が表示されている時だけカード全体のスクロールを解禁 */
+.quiz-container:has(#result-screen:not([style*="display: none"])) {
+    max-height: 90vh; /* 画面に納まる最大高 */
+    overflow-y: auto; /* スワイプ・スクロールを許可 */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
-    transition: background 0.5s ease, border-color 0.5s ease;
 }
 
 /* 各画面要素が横幅いっぱいに収まるよう調整 */
@@ -456,10 +462,12 @@ button:disabled {
     z-index: 9999;
 }
 
-/* 📝 復習（間違えた問題）表示用スタイル（スクロール固定を解除） */
+/* 📝 復習（間違えた問題）表示用スタイル */
 .wrong-questions-container {
     margin-top: 15px;
     text-align: left;
+    max-height: none; /* 小さな枠内スクロールではなく、カード全体のスクロールに任せる */
+    overflow: visible;
 }
 .wrong-item {
     background: #fff;
