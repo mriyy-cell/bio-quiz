@@ -8,19 +8,21 @@
     --text-main: #334155;
 }
 
-/* 1. 画面全体（背景）はバウンス防止・中央配置 */
+/* 1. 画面全体は、埋め込み領域が狭い場合もページスクロール可能にする */
 html, body {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    height: auto;
     margin: 0;
-    padding: 0;
-    overscroll-behavior: none;
-    overflow: hidden;
+    padding: 12px 0;
+    overscroll-behavior-y: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     -webkit-user-select: none;
     user-select: none;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     font-family: 'M PLUS Rounded 1c', sans-serif;
     background: #f8fafc;
     background-image:
@@ -32,8 +34,11 @@ html, body {
     position: relative;
 }
 
-/* 2. カード全体（縦長になったときはカードごとスワイプスクロールさせる） */
-/* 2. カード全体の設定（デフォルトはスクロール不可） */
+body {
+    min-height: 100vh;
+}
+
+/* 2. カード全体 */
 .quiz-container {
     background-color: var(--card-bg);
     border-radius: 24px;
@@ -46,13 +51,12 @@ html, body {
     border: 4px solid #f1f5f9;
     position: relative;
     z-index: 1;
-    
-    /* 普段（ログイン・タイトル・クイズ画面）はスクロール不可でピタッと固定 */
-    overflow: hidden;
+    margin-block: auto;
+    overflow: visible;
     transition: background 0.5s ease, border-color 0.5s ease;
 }
 
-/* 3. 結果・提出画面（#result-screen）が表示されている時だけカード全体のスクロールを解禁 */
+/* 3. 結果・提出画面はカード内もスクロール可能にする */
 .quiz-container:has(#result-screen:not([style*="display: none"])) {
     max-height: 90vh; /* 画面に納まる最大高 */
     overflow-y: auto; /* スワイプ・スクロールを許可 */
