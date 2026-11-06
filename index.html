@@ -21,24 +21,6 @@
     <span>🌿</span><span>🧪</span><span>🧬</span><span>🍃</span><span>🧫</span><span>🌱</span>
 </div>
 
-<!-- 🛠️ デバッグコントロールパネル -->
-<div id="debug-panel">
-    <button id="debug-trigger-btn">🛠️ DBG</button>
-    <div id="debug-controls" style="display: none;">
-        <span>👑数:</span>
-        <select id="debug-crown-select">
-            <option value="auto">自動 (Firestore)</option>
-            <option value="0">0個 (Default)</option>
-            <option value="1">1個 (Forest Lumen)</option>
-            <option value="2">2個 (Emerald Crest)</option>
-            <option value="3">3個 (Jade Royal)</option>
-            <option value="4">4個 (Royal Canopy)</option>
-            <option value="5">5個 (Aurora Grove)</option>
-            <option value="6">6個 (Mythic Arsenal)</option>
-        </select>
-    </div>
-</div>
-
 <div class="quiz-container" id="main-quiz-container">
     <h1>🧬 生物基礎 一問一答 </h1>
 
@@ -185,7 +167,21 @@
         </div>
     </div>
 
-    <!-- 7. タイトルデザイン変更モーダル -->
+    <!-- 7. クイズ中断確認モーダル -->
+    <div id="quit-confirm-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="quit-confirm-title">
+            <h2 id="quit-confirm-title">タイトルに戻りますか？</h2>
+            <p>現在のクイズの進捗は破棄されます。</p>
+            <button id="continue-quiz-btn" class="btn btn-primary" style="width: 100%; margin-bottom: 12px;">
+                クイズを続ける
+            </button>
+            <button id="confirm-quit-to-title-btn" class="btn" style="width: 100%; background-color: #94a3b8; color: white;">
+                タイトルに戻る
+            </button>
+        </div>
+    </div>
+
+    <!-- 8. タイトルデザイン変更モーダル -->
     <div id="theme-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 440px; text-align: left;">
             <h2 style="text-align: center; margin-bottom: 10px;">🎨 デザイン選択</h2>
@@ -259,16 +255,14 @@ if ('serviceWorker' in navigator) {
     const resultBackToTitleBtn = document.getElementById("result-back-to-title-btn");
     const submitScoreBtn = document.getElementById("submit-score-btn");
     const quitToTitleBtn = document.getElementById("quit-to-title-btn");
+    const quitConfirmModal = document.getElementById("quit-confirm-modal");
+    const continueQuizBtn = document.getElementById("continue-quiz-btn");
+    const confirmQuitToTitleBtn = document.getElementById("confirm-quit-to-title-btn");
 
     const changeThemeBtn = document.getElementById("change-theme-btn");
     const themeModal = document.getElementById("theme-modal");
     const themeListContainer = document.getElementById("theme-list-container");
     const closeThemeBtn = document.getElementById("close-theme-btn");
-
-    const debugTriggerBtn = document.getElementById("debug-trigger-btn");
-    const debugControls = document.getElementById("debug-controls");
-    const debugCrownSelect = document.getElementById("debug-crown-select");
-    const DEBUG_PASSWORD = "3094";
 
     const POINTS_PER_CORRECT_ANSWER = 100;
     const crownSummary = document.getElementById("crown-summary");
@@ -306,20 +300,6 @@ if ('serviceWorker' in navigator) {
     if (window.location.protocol === "file:") {
         userStatus.innerText = "このログイン機能は、ファイルを直接開かずWebサーバー経由で利用してください。";
     }
-
-    // デバッグコントロール処理
-    debugTriggerBtn.addEventListener("click", () => {
-        if (debugControls.style.display === "none") {
-            const inputPass = prompt("デバッグ用パスワードを入力してください:");
-            if (inputPass === DEBUG_PASSWORD) {
-                debugControls.style.display = "flex";
-            } else if (inputPass !== null) {
-                alert("パスワードが違います。");
-            }
-        } else {
-            debugControls.style.display = "none";
-        }
-    });
 
     // 1. 最初の画面で「ログインせずに始める（ゲスト）」を押したとき
     if (guestLoginBtn) {
@@ -489,29 +469,24 @@ if ('serviceWorker' in navigator) {
         const user = auth.currentUser;
         if (!user) return;
 
-        const debugVal = debugCrownSelect.value;
-        if (debugVal !== "auto") {
-            userCrownCount = parseInt(debugVal, 10);
-        } else {
-            let crowns = 0;
-            try {
-                for (let i = 0; i < rawUnitsData.length; i++) {
-                    const unitTitle = rawUnitsData[i].title || `単元 ${i + 1}`;
-                    const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
-                    const docRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
-                    const docSnap = await getDoc(docRef);
+        let crowns = 0;
+        try {
+            for (let i = 0; i < rawUnitsData.length; i++) {
+                const unitTitle = rawUnitsData[i].title || `単元 ${i + 1}`;
+                const safeUnitKey = unitTitle.replace(/[/\\?%*:|"<>\s]/g, "_");
+                const docRef = doc(db, "users", user.uid, "unitScores", safeUnitKey);
+                const docSnap = await getDoc(docRef);
 
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data.scorePercent === 100 && data.questionCount === "all_questions") {
-                            crowns++;
-                        }
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.scorePercent === 100 && data.questionCount === "all_questions") {
+                        crowns++;
                     }
                 }
-                userCrownCount = crowns;
-            } catch (e) {
-                console.error("王冠数確認エラー:", e);
             }
+            userCrownCount = crowns;
+        } catch (e) {
+            console.error("王冠数確認エラー:", e);
         }
 
         if (userCrownCount >= 1) {
@@ -522,21 +497,19 @@ if ('serviceWorker' in navigator) {
 
         updateProgressSummary();
 
-        if (debugVal === "auto") {
-            try {
-                const customThemeRef = doc(db, "users", user.uid, "settings", "theme");
-                const customThemeSnap = await getDoc(customThemeRef);
+        try {
+            const customThemeRef = doc(db, "users", user.uid, "settings", "theme");
+            const customThemeSnap = await getDoc(customThemeRef);
 
-                if (customThemeSnap.exists() && customThemeSnap.data().selectedTheme !== undefined) {
-                    const savedTheme = customThemeSnap.data().selectedTheme;
-                    const themeObj = CAMO_THEMES.find(t => t.id === savedTheme);
-                    if (themeObj && userCrownCount >= themeObj.reqCrowns) {
-                        applyThemeClass(themeObj.class);
-                        return;
-                    }
+            if (customThemeSnap.exists() && customThemeSnap.data().selectedTheme !== undefined) {
+                const savedTheme = customThemeSnap.data().selectedTheme;
+                const themeObj = CAMO_THEMES.find(t => t.id === savedTheme);
+                if (themeObj && userCrownCount >= themeObj.reqCrowns) {
+                    applyThemeClass(themeObj.class);
+                    return;
                 }
-            } catch(e) { console.error(e); }
-        }
+            }
+        } catch(e) { console.error(e); }
 
         if (userCrownCount >= 6) applyThemeClass("camo-legend");
         else if (userCrownCount === 5) applyThemeClass("camo-aurora");
@@ -546,10 +519,6 @@ if ('serviceWorker' in navigator) {
         else if (userCrownCount === 1) applyThemeClass("camo-forest");
         else applyThemeClass("");
     }
-
-    debugCrownSelect.addEventListener("change", () => {
-        checkUserCrownsAndApplyTheme();
-    });
 
     function applyThemeClass(className) {
         currentThemeClass = className;
@@ -586,7 +555,7 @@ if ('serviceWorker' in navigator) {
                     applyThemeClass(t.class);
                     themeModal.style.display = "none";
                     const user = auth.currentUser;
-                    if (user && debugCrownSelect.value === "auto") {
+                    if (user) {
                         try {
                             await setDoc(doc(db, "users", user.uid, "settings", "theme"), {
                                 selectedTheme: t.id
@@ -800,16 +769,26 @@ if ('serviceWorker' in navigator) {
     closeStatsBtn.addEventListener("click", () => { statsModal.style.display = "none"; });
     submitScoreBtn.addEventListener("click", () => sendScore());
     
-    quitToTitleBtn.addEventListener("click", () => {
-        const confirmQuit = confirm("クイズを中断してタイトルに戻りますか？\n（現在の進捗は破棄されます）");
-        if (confirmQuit) {
-            quizScreen.style.display = "none";
-            if (!isGuestMode && auth.currentUser) {
-                authSection.style.display = "block";
-            }
-            startScreen.style.display = "block";
+    function showQuitConfirm() {
+        quitConfirmModal.style.display = "flex";
+        continueQuizBtn.focus();
+    }
+
+    function returnToTitleFromQuiz() {
+        quitConfirmModal.style.display = "none";
+        quizScreen.style.display = "none";
+        if (!isGuestMode && auth.currentUser) {
+            authSection.style.display = "block";
         }
+        startScreen.style.display = "block";
+    }
+
+    quitToTitleBtn.addEventListener("click", showQuitConfirm);
+    continueQuizBtn.addEventListener("click", () => {
+        quitConfirmModal.style.display = "none";
+        quitToTitleBtn.focus();
     });
+    confirmQuitToTitleBtn.addEventListener("click", returnToTitleFromQuiz);
 
     function resetToTitleScreen() {
         completionModal.style.display = "none";
@@ -837,8 +816,21 @@ if ('serviceWorker' in navigator) {
     resultBackToTitleBtn.addEventListener("click", resetToTitleScreen);
 
     document.addEventListener("keydown", (e) => {
+        if (quitConfirmModal.style.display === "flex") {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                quitConfirmModal.style.display = "none";
+                quitToTitleBtn.focus();
+            }
+            return;
+        }
+
         if (quizScreen.style.display === "block") {
-            if (!isAnswered && ["1", "2", "3", "4"].includes(e.key)) {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                showQuitConfirm();
+            }
+            else if (!isAnswered && ["1", "2", "3", "4"].includes(e.key)) {
                 const index = parseInt(e.key) - 1;
                 const buttons = document.querySelectorAll(".option-btn");
                 if (buttons[index]) {
