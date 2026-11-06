@@ -13,6 +13,13 @@
 </head>
 <body>
 
+<div class="fullscreen-control">
+    <button id="fullscreen-btn" class="btn btn-primary" type="button" aria-pressed="false">
+        ⛶ 全画面表示
+    </button>
+    <p id="fullscreen-status" role="status" aria-live="polite" hidden></p>
+</div>
+
 <!-- 生物系の絵文字を背景で降らせる装飾レイヤー（クイズ操作の対象外） -->
 <div class="bio-rain" aria-hidden="true">
     <span>🧬</span><span>🦠</span><span>🌿</span><span>🔬</span><span>🧫</span><span>🌱</span>
@@ -230,6 +237,8 @@ if ('serviceWorker' in navigator) {
 
     // DOM要素の取得
     const mainQuizContainer = document.getElementById("main-quiz-container");
+    const fullscreenBtn = document.getElementById("fullscreen-btn");
+    const fullscreenStatus = document.getElementById("fullscreen-status");
     const authSection = document.getElementById("auth-section");
     const loginNotice = document.getElementById("login-notice");
     const userStatus = document.getElementById("user-status");
@@ -269,6 +278,34 @@ if ('serviceWorker' in navigator) {
     const crownCountDisplay = document.getElementById("crown-count-display");
     const pointCountDisplay = document.getElementById("point-count-display");
     const earnedPointsDisplay = document.getElementById("earned-points");
+
+    function updateFullscreenButton() {
+        const isFullscreen = document.fullscreenElement !== null;
+        fullscreenBtn.innerText = isFullscreen ? "⛶ 全画面を終了" : "⛶ 全画面表示";
+        fullscreenBtn.setAttribute("aria-pressed", String(isFullscreen));
+    }
+
+    fullscreenBtn.addEventListener("click", async () => {
+        fullscreenStatus.hidden = true;
+        fullscreenStatus.innerText = "";
+
+        try {
+            if (document.fullscreenElement) {
+                await document.exitFullscreen();
+            } else if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            } else {
+                fullscreenStatus.innerText = "このブラウザーでは全画面表示を利用できません。";
+                fullscreenStatus.hidden = false;
+            }
+        } catch (error) {
+            console.error("全画面表示に切り替えられませんでした:", error);
+            fullscreenStatus.innerText = "全画面表示できません。埋め込み側で許可されていない場合は、新しいウィンドウで開いてお試しください。";
+            fullscreenStatus.hidden = false;
+        }
+    });
+
+    document.addEventListener("fullscreenchange", updateFullscreenButton);
 
     let rawUnitsData = [];
     let currentActiveQuestions = [];
